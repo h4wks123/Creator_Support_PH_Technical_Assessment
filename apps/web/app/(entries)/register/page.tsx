@@ -36,7 +36,7 @@ export default function Register() {
         Sign In
       </Button>
       <Link
-        href="/signin"
+        href="/login"
         className="w-full text-start text-primary underline text-md"
       >
         Sign in instead
