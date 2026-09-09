@@ -6,12 +6,12 @@ import Link from "next/link";
 
 export default function Login() {
   return (
-    <form className="bg-foreground absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-135 rounded-md flex flex-col items-center px-6 pb-12 shadow-xl/30 gap-6">
+    <form className="bg-foreground absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-135 rounded-md flex flex-col items-center px-6 py-12 shadow-xl/30 gap-6">
       <Image
         src="/creator_support_ph_logo.png"
         alt="creator_support_ph_logo"
-        width={175}
-        height={75}
+        width={150}
+        height={50}
         loading="eager"
         style={{ width: "auto", height: "auto" }}
       />
