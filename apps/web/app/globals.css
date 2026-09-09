@@ -1,0 +1,13 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap");
+
+@import "tailwindcss";
+
+@theme {
+  --color-background: #e5e7eb;
+  --color-primary: #7a2a72;
+  --color-secondary: #2e333b;
+  --color-foreground: #f6f7f9;
+  --color-post: #49cc90;
+  --color-put: #61affe;
+  --color-delete: #f93e3e;
+}
