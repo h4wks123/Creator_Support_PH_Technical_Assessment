@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS questions (
     question_type smallint NOT NULL,
     question_order integer NOT NULL,
     question_is_required boolean NOT NULL DEFAULT false,
+    -- Extra settings that varies by question type
     question_config jsonb NOT NULL DEFAULT '{}'::jsonb,
     question_deleted_at timestamptz,
     question_created_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -61,6 +62,7 @@ CREATE TABLE IF NOT EXISTS answers (
     -- 1 short_text, 2 long_text, 3 date, 4 dropdown,
     -- 5 multi_select, 6 multiple_choice, 7 checkboxes, 8 linear_scale.
     answer_question_type smallint NOT NULL,
+    -- Extra settings that varies by question type
     answer_question_config jsonb NOT NULL DEFAULT '{}'::jsonb,
     answer_value jsonb,
     CONSTRAINT answers_order_positive CHECK (answer_question_order > 0),

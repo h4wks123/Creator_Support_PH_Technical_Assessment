@@ -27,7 +27,7 @@ authRoutes.post("/login", async (req, res) => {
 
   try {
     const result = await pool.query(
-      "SELECT id, user_email, user_password_hash FROM users WHERE user_email=$1",
+      "SELECT user_id, user_email, user_password_hash FROM users WHERE user_email=$1",
       [email],
     );
 
@@ -42,7 +42,7 @@ authRoutes.post("/login", async (req, res) => {
     }
 
     const token = jwt.sign(
-      { sub: user.id, email: user.user_email },
+      { sub: user.user_id, email: user.user_email },
       `${process.env.JWT_SECRET}`,
       { expiresIn: "1d" },
     );
@@ -76,15 +76,15 @@ authRoutes.post("/register", async (req, res) => {
     const userName = email.split("@")[0];
 
     const result = await pool.query(
-      `INSERT INTO users (id, user_name, user_email, user_password_hash)
+      `INSERT INTO users (user_id, user_name, user_email, user_password_hash)
        VALUES ($1, $2, $3, $4)
-       RETURNING id, user_name, user_email, user_created_at`,
+      RETURNING user_id, user_name, user_email, user_created_at`,
       [crypto.randomUUID(), userName, email, hashedPassword],
     );
 
     const user = result.rows[0];
     const token = jwt.sign(
-      { sub: user.id, email: user.user_email },
+      { sub: user.user_id, email: user.user_email },
       `${process.env.JWT_SECRET}`,
       { expiresIn: "1d" },
     );
