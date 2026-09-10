@@ -12,9 +12,11 @@ import {
 } from "@/types/forms";
 import { useState } from "react";
 import Link from "next/link";
-import { createForm } from "@/lib/api/forms";
-import { createQuestions } from "@/lib/api/questions";
+import { useRouter } from "next/navigation";
+import { createForm, getForm } from "@/lib/api/forms";
+import { createQuestions, getQuestions } from "@/lib/api/questions";
 import toaster from "@/components/toaster";
+import { useEffect } from "react";
 
 const initialDraft: FormDraft = {
   title: "Untitled form",
@@ -24,9 +26,47 @@ const initialDraft: FormDraft = {
 };
 
 export default function FormBuilder({ formId }: { formId: string }) {
+  const router = useRouter();
   const [draft, setDraft] = useState<FormDraft>(initialDraft);
   const [hasSaved, setHasSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(formId !== "new");
+
+  useEffect(() => {
+    if (formId === "new") return;
+
+    let isActive = true;
+
+    async function loadForm() {
+      try {
+        const [form, questions] = await Promise.all([
+          getForm(formId),
+          getQuestions(formId),
+        ]);
+        if (!isActive) return;
+        setDraft({
+          title: form.form_title,
+          description: form.form_description ?? "",
+          published: form.form_is_published,
+          questions,
+        });
+        setIsLoading(false);
+      } catch (error) {
+        if (isActive) {
+          toaster(
+            500,
+            error instanceof Error ? error.message : "Unable to load form",
+          );
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadForm();
+    return () => {
+      isActive = false;
+    };
+  }, [formId]);
   const updateQuestions = (questions: FormQuestion[]) =>
     setDraft((current) => ({
       ...current,
@@ -64,12 +104,13 @@ export default function FormBuilder({ formId }: { formId: string }) {
       setDraft((current) => ({ ...current, published: true }));
       setHasSaved(true);
       toaster(200, "Form created");
+      router.push(`/form/${form.form_id}`);
+      setIsSaving(false);
     } catch (error) {
       toaster(
         500,
         error instanceof Error ? error.message : "Unable to create form",
       );
-    } finally {
       setIsSaving(false);
     }
   };
@@ -121,12 +162,7 @@ export default function FormBuilder({ formId }: { formId: string }) {
         </div>
       </div>
       <div className="mx-auto w-full max-w-360 px-5 py-8">
-        {formId !== "new" ? (
-          <div role="status" className="mb-4 text-xs text-slate-500">
-            Editing an existing form is not available yet because the backend
-            currently exposes form creation only.
-          </div>
-        ) : null}
+        {isLoading ? <div role="status" className="mb-4 text-xs text-slate-500">Loading form...</div> : null}
         {hasSaved ? (
           <div role="status" className="mb-4 text-xs text-green-700">
             Form and questions were saved.

@@ -1,8 +1,10 @@
 import type { Credentials, LoginResponse, RegisterResponse } from "@/types/api";
 
+const API_URL = process.env.NEXT_PUBLIC_APP_API_URL || "http://localhost:5000";
+
 export const loginUser = async (credentials: Credentials) => {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_API_URL}/api/auth/login`,
+    `${API_URL}/api/auth/login`,
     {
       method: "POST",
       headers: {
@@ -12,6 +14,10 @@ export const loginUser = async (credentials: Credentials) => {
     },
   );
 
+  const contentType = response.headers.get("content-type") ?? "";
+  if (!contentType.includes("application/json")) {
+    throw new Error("Unable to sign in");
+  }
   const data: LoginResponse = await response.json();
 
   if (!response.ok) {
@@ -23,7 +29,7 @@ export const loginUser = async (credentials: Credentials) => {
 
 export const registerUser = async (credentials: Credentials) => {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_API_URL}/api/auth/register`,
+    `${API_URL}/api/auth/register`,
     {
       method: "POST",
       headers: {
@@ -33,6 +39,10 @@ export const registerUser = async (credentials: Credentials) => {
     },
   );
 
+  const contentType = response.headers.get("content-type") ?? "";
+  if (!contentType.includes("application/json")) {
+    throw new Error("Unable to register");
+  }
   const data: RegisterResponse = await response.json();
 
   if (!response.ok) {

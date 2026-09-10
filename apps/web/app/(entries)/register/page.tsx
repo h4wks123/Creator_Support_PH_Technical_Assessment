@@ -52,11 +52,11 @@ export default function Register() {
       });
 
       saveAuthToken(data.token);
+      setIsSubmitting(false);
       router.push("/");
       router.refresh();
     } catch {
       toaster(500, "Unable to register. Please try again.");
-    } finally {
       setIsSubmitting(false);
     }
   };

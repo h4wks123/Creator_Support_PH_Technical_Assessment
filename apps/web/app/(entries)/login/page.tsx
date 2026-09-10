@@ -28,11 +28,11 @@ export default function Login() {
       toaster(200, "Successfully signed in");
 
       saveAuthToken(data.token);
+      setIsSubmitting(false);
       router.push("/");
       router.refresh();
     } catch {
       toaster(500, "Unable to sign in. Please try again.");
-    } finally {
       setIsSubmitting(false);
     }
   };

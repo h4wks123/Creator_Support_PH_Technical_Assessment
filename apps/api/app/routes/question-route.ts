@@ -12,6 +12,50 @@ const QUESTION_ERROR_MESSAGE = "Unable to process question request";
 const getUser = (res: Response) => res.locals.user as AuthenticatedUser;
 questionRoutes.use(verifyJWT);
 
+questionRoutes.get("/:formId/questions", async (req, res) => {
+  const { formId } = req.params;
+
+  try {
+    const result = await pool.query(
+      `SELECT q.question_id, q.question_form_id, q.question_label,
+              q.question_type, q.question_order, q.question_is_required,
+              q.question_config, q.question_deleted_at,
+              q.question_created_at, q.question_updated_at
+       FROM questions q
+       INNER JOIN forms f ON f.form_id = q.question_form_id
+       WHERE q.question_form_id = $1
+         AND f.form_owner_id = $2
+         AND q.question_deleted_at IS NULL
+       ORDER BY q.question_order ASC`,
+      [formId, getUser(res).userId],
+    );
+
+    const form = await pool.query(
+      "SELECT form_id FROM forms WHERE form_id = $1 AND form_owner_id = $2",
+      [formId, getUser(res).userId],
+    );
+    if (form.rowCount !== 1) {
+      logger.warn(
+        { userId: getUser(res).userId, formId },
+        "Questions requested for an unavailable form",
+      );
+      return res.status(404).json({ message: QUESTION_ERROR_MESSAGE });
+    }
+
+    logger.info(
+      { userId: getUser(res).userId, formId, questionCount: result.rowCount },
+      "Questions fetched",
+    );
+    return res.status(200).json({ questions: result.rows });
+  } catch (err) {
+    logger.error(
+      { error: err, userId: getUser(res).userId, formId },
+      "Questions fetch failed",
+    );
+    return res.status(500).json({ message: QUESTION_ERROR_MESSAGE });
+  }
+});
+
 questionRoutes.post("/:formId/questions", async (req, res) => {
   const { formId } = req.params;
   const question = parseCreateQuestion(req.body);
