@@ -1,42 +1,24 @@
 import express from "express";
 import cors from "cors";
-import { pino } from "pino";
-import { pool } from "./config/psql-db.ts";
+import { logger } from "./utils/logger.ts";
+import authRoutes from "./routes/auth-route.ts";
 
 const app = express();
 const port = 5000;
 const corsOption = {
-  origin: "http://localhost:5000",
+  origin: "http://localhost:3000",
   credentials: true,
 };
-
-const logger = pino({
-  level: "info",
-  transport: {
-    target: "pino-pretty",
-    options: {
-      colorize: true,
-    },
-  },
-});
 
 app.use(cors(corsOption));
 app.use(express.json());
 
-app.get("/", async (req, res) => {
-  try {
-    const result = await pool.query("SELECT NOW()");
-    res.send(`Database connected! Current time from DB: ${result.rows[0].now}`);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Database connection error");
-  }
-});
+app.use("/api/auth", authRoutes);
 
 const server = app.listen(port, () => {
   logger.info(`Example app listening on port ${port}`);
 });
 
 server.on("error", (err) => {
-  logger.error(`Server failed to start: ${err}`);
+  logger.error({ error: err }, `Server failed to start`);
 });
