@@ -25,6 +25,8 @@ export default function Login() {
         password: String(formData.get("password")),
       });
 
+      toaster(200, "Successfully signed in");
+
       saveAuthToken(data.token);
       router.push("/");
       router.refresh();

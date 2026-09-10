@@ -2,6 +2,10 @@ const AUTH_COOKIE = "auth_token";
 const ONE_DAY_IN_SECONDS = 86400;
 
 const getAuthToken = () => {
+  if (typeof document === "undefined") {
+    return "";
+  }
+
   return document.cookie
     .split("; ")
     .find((cookie) => cookie.startsWith(`${AUTH_COOKIE}=`))
@@ -25,17 +29,31 @@ const decodeJwtPayload = (token: string) => {
 };
 
 export const saveAuthToken = (token: string) => {
+  if (typeof document === "undefined") {
+    return;
+  }
+
   document.cookie = `${AUTH_COOKIE}=${token}; path=/; max-age=${ONE_DAY_IN_SECONDS}; SameSite=Lax`;
 };
 
 export const clearAuthToken = () => {
+  if (typeof document === "undefined") {
+    return;
+  }
+
   document.cookie = `${AUTH_COOKIE}=; path=/; max-age=0; SameSite=Lax`;
 };
 
 export const getLoggedInEmail = () => {
   const token = getAuthToken();
 
-  if (!token) return;
+  if (!token) {
+    return "";
+  }
 
-  return decodeJwtPayload(token)?.email ?? "";
+  try {
+    return decodeJwtPayload(token)?.email ?? "";
+  } catch {
+    return "";
+  }
 };

@@ -4,19 +4,26 @@ import { Button } from "@/components/button";
 import { clearAuthToken, getLoggedInEmail } from "@/lib/auth";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useSyncExternalStore } from "react";
+import toaster from "./toaster";
+
+const subscribeToAuthCookie = () => {
+  return () => {};
+};
 
 export default function NavBar() {
   const router = useRouter();
-  const email = getLoggedInEmail();
+  const email = useSyncExternalStore(subscribeToAuthCookie, getLoggedInEmail, () => "");
 
   const handleLogout = () => {
     clearAuthToken();
+    toaster(200, "Successfully logged out.");
     router.push("/login");
     router.refresh();
   };
 
   return (
-    <header className="bg-background flex justify-center">
+    <header className="bg-foreground flex justify-center">
       <nav className="w-full max-w-360 flex justify-between items-center gap-4 px-4 py-2">
         <div className="flex justify-center items-center gap-2">
           <Image

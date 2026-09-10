@@ -34,7 +34,7 @@ const toaster = (status: number, message: string) => {
     pauseOnFocusLoss: false,
     draggable: true,
     progress: undefined,
-    theme: "dark",
+    theme: "light",
   });
 };
 

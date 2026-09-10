@@ -4,7 +4,7 @@ import NavBar from "@/components/nav-bar";
 
 export default function Home() {
   return (
-    <main className="min-h-dvh bg-foreground text-secondary">
+    <main className="min-h-dvh bg-background text-secondary">
       <NavBar />
     </main>
   );
