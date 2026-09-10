@@ -1,7 +1,7 @@
 const AUTH_COOKIE = "auth_token";
 const ONE_DAY_IN_SECONDS = 86400;
 
-const getAuthToken = () => {
+const readAuthToken = () => {
   if (typeof document === "undefined") {
     return "";
   }
@@ -11,6 +11,8 @@ const getAuthToken = () => {
     .find((cookie) => cookie.startsWith(`${AUTH_COOKIE}=`))
     ?.split("=")[1];
 };
+
+export const getAuthToken = () => readAuthToken();
 
 const decodeJwtPayload = (token: string) => {
   const payload = token.split(".")[1];
@@ -45,7 +47,7 @@ export const clearAuthToken = () => {
 };
 
 export const getLoggedInEmail = () => {
-  const token = getAuthToken();
+  const token = readAuthToken();
 
   if (!token) {
     return "";

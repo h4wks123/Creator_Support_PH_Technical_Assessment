@@ -12,21 +12,21 @@ import {
 } from "@/types/forms";
 import { useState } from "react";
 import Link from "next/link";
+import { createForm } from "@/lib/api/forms";
+import { createQuestions } from "@/lib/api/questions";
+import toaster from "@/components/toaster";
 
 const initialDraft: FormDraft = {
   title: "Untitled form",
   description: "",
-  questions: [
-    createQuestion("dropdown", 1),
-    createQuestion("long_text", 2),
-    createQuestion("date", 3),
-  ],
+  questions: [],
   published: false,
 };
 
 export default function FormBuilder({ formId }: { formId: string }) {
   const [draft, setDraft] = useState<FormDraft>(initialDraft);
   const [hasSaved, setHasSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const updateQuestions = (questions: FormQuestion[]) =>
     setDraft((current) => ({
       ...current,
@@ -50,9 +50,28 @@ export default function FormBuilder({ formId }: { formId: string }) {
     ];
     updateQuestions(questions);
   };
-  const publishForm = () => {
-    setDraft((current) => ({ ...current, published: true }));
-    setHasSaved(true);
+  const publishForm = async () => {
+    if (formId !== "new" || isSaving) return;
+
+    setIsSaving(true);
+    try {
+      const form = await createForm({
+        title: draft.title,
+        description: draft.description,
+        isPublished: true,
+      });
+      await createQuestions(form.form_id, draft.questions);
+      setDraft((current) => ({ ...current, published: true }));
+      setHasSaved(true);
+      toaster(200, "Form created");
+    } catch (error) {
+      toaster(
+        500,
+        error instanceof Error ? error.message : "Unable to create form",
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
   return (
     <div
@@ -60,7 +79,7 @@ export default function FormBuilder({ formId }: { formId: string }) {
       className="min-h-[calc(100dvh-57px)] bg-[#f7f8fa] text-secondary"
     >
       <div className="border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-212 px-5 sm:px-0">
+        <div className="mx-auto max-w-360 px-5">
           <div className="flex h-12 items-center gap-3 text-sm">
             <Link href="/form" className="text-slate-500">
               ← All forms
@@ -75,8 +94,13 @@ export default function FormBuilder({ formId }: { formId: string }) {
                 size="small"
                 className="h-8 w-auto px-4 text-white"
                 onClick={publishForm}
+                disabled={isSaving || formId !== "new"}
               >
-                {draft.published ? "Published" : "Publish"}
+                {isSaving
+                  ? "Saving..."
+                  : draft.published
+                    ? "Published"
+                    : "Publish"}
               </Button>
             </div>
           </div>
@@ -96,10 +120,16 @@ export default function FormBuilder({ formId }: { formId: string }) {
           </div>
         </div>
       </div>
-      <div className="mx-auto w-full max-w-212 px-5 py-8 sm:px-0">
+      <div className="mx-auto w-full max-w-360 px-5 py-8">
+        {formId !== "new" ? (
+          <div role="status" className="mb-4 text-xs text-slate-500">
+            Editing an existing form is not available yet because the backend
+            currently exposes form creation only.
+          </div>
+        ) : null}
         {hasSaved ? (
           <div role="status" className="mb-4 text-xs text-green-700">
-            Changes saved locally for this session.
+            Form and questions were saved.
           </div>
         ) : null}
         <section className="border-b border-slate-200 pb-6">
