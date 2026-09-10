@@ -7,7 +7,10 @@ const PROTECTED_ROUTES = ["/"];
 
 const base64UrlToBytes = (base64Url: string) => {
   const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-  const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "=");
+  const padded = base64.padEnd(
+    base64.length + ((4 - (base64.length % 4)) % 4),
+    "=",
+  );
   const binary = atob(padded);
   return Uint8Array.from(binary, (char) => char.charCodeAt(0));
 };
@@ -45,7 +48,9 @@ const verifyJwt = async (token: string) => {
       return false;
     }
 
-    const claims = JSON.parse(new TextDecoder().decode(base64UrlToBytes(payload)));
+    const claims = JSON.parse(
+      new TextDecoder().decode(base64UrlToBytes(payload)),
+    );
     const expiresAt = typeof claims.exp === "number" ? claims.exp * 1000 : 0;
 
     return expiresAt > Date.now();
