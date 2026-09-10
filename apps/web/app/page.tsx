@@ -1,11 +1,5 @@
-"use client";
+import { redirect } from "next/navigation";
 
-import NavBar from "@/components/nav-bar";
-
-export default function Home() {
-  return (
-    <main className="min-h-dvh bg-background text-secondary">
-      <NavBar />
-    </main>
-  );
+export default function HomePage() {
+  redirect("/form");
 }

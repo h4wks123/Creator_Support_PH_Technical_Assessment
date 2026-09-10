@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 
 const AUTH_COOKIE = "auth_token";
 const AUTH_ROUTES = ["/login", "/register"];
-const PROTECTED_ROUTES = ["/"];
+const PROTECTED_ROUTES = ["/", "/form"];
 
 const base64UrlToBytes = (base64Url: string) => {
   const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
@@ -83,5 +83,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/login", "/register"],
+  matcher: ["/", "/form/:path*", "/login", "/register"],
 };
