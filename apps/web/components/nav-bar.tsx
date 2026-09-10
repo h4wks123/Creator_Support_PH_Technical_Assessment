@@ -1,21 +1,25 @@
 "use client";
 
 import { Button } from "@/components/button";
-import { clearAuthToken, getLoggedInEmail } from "@/lib/auth";
+import {
+  AUTH_CHANGE_EVENT,
+  clearAuthToken,
+  getLoggedInEmail,
+} from "@/lib/auth";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import toaster from "./toaster";
 
-const subscribeToAuthCookie = () => {
-  return () => {};
-};
-
 export default function NavBar() {
   const router = useRouter();
+  const pathname = usePathname();
   const email = useSyncExternalStore(
-    subscribeToAuthCookie,
+    (onStoreChange) => {
+      window.addEventListener(AUTH_CHANGE_EVENT, onStoreChange);
+      return () => window.removeEventListener(AUTH_CHANGE_EVENT, onStoreChange);
+    },
     getLoggedInEmail,
     () => "",
   );
@@ -26,6 +30,10 @@ export default function NavBar() {
     router.push("/login");
     router.refresh();
   };
+
+  const showNavbar = pathname === "/" || pathname.startsWith("/form/");
+
+  if (!showNavbar) return null;
 
   return (
     <header className="flex justify-center border-b border-slate-200 bg-white">
@@ -42,7 +50,7 @@ export default function NavBar() {
           </h3>
         </Link>
         <div className="flex items-center gap-5 text-sm">
-          <Link href="/form" className="text-primary">
+          <Link href="/" className="text-primary">
             Forms
           </Link>
           <Link href="#" className="text-slate-600 hover:text-primary">

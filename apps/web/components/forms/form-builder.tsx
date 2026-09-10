@@ -122,15 +122,12 @@ export default function FormBuilder({ formId }: { formId: string }) {
       <div className="border-b border-slate-200 bg-white">
         <div className="mx-auto max-w-360 px-5">
           <div className="flex h-12 items-center gap-3 text-sm">
-            <Link href="/form" className="text-slate-500">
+            <Link href="/" className="text-slate-500">
               ← All forms
             </Link>
             <span className="text-slate-300">|</span>
             <strong className="text-lg">{draft.title}</strong>
             <div className="ml-auto flex items-center gap-3">
-              <span className="text-xs text-slate-500">
-                {draft.published ? "Published" : "Draft"}
-              </span>
               <Button
                 size="small"
                 className="h-8 w-auto px-4 text-white"
@@ -162,7 +159,11 @@ export default function FormBuilder({ formId }: { formId: string }) {
         </div>
       </div>
       <div className="mx-auto w-full max-w-360 px-5 py-8">
-        {isLoading ? <div role="status" className="mb-4 text-xs text-slate-500">Loading form...</div> : null}
+        {isLoading ? (
+          <div role="status" className="mb-4 text-xs text-slate-500">
+            Loading form...
+          </div>
+        ) : null}
         {hasSaved ? (
           <div role="status" className="mb-4 text-xs text-green-700">
             Form and questions were saved.

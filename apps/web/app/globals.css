@@ -3,6 +3,11 @@
 @import "tailwindcss";
 @import "react-toastify/dist/ReactToastify.css";
 
+button:not(:disabled),
+a {
+  cursor: pointer;
+}
+
 @theme {
   --color-background: #e5e7eb;
   --color-primary: #7a2a72;

@@ -73,7 +73,37 @@ formRoutes.get("/:formId", async (req, res) => {
       { error: err, userId: getUser(res).userId, formId: req.params.formId },
       "Form fetch failed",
     );
-    
+
+    return res.status(500).json({ message: FORM_ERROR_MESSAGE });
+  }
+});
+
+formRoutes.delete("/:formId", async (req, res) => {
+  const { formId } = req.params;
+
+  try {
+    const result = await pool.query(
+      `DELETE FROM forms
+       WHERE form_id = $1 AND form_owner_id = $2
+       RETURNING form_id`,
+      [formId, getUser(res).userId],
+    );
+
+    if (result.rowCount !== 1) {
+      logger.warn(
+        { userId: getUser(res).userId, formId },
+        "Form delete requested for an unavailable form",
+      );
+      return res.status(404).json({ message: FORM_ERROR_MESSAGE });
+    }
+
+    logger.info({ userId: getUser(res).userId, formId }, "Form deleted");
+    return res.status(200).json({ formId });
+  } catch (err) {
+    logger.error(
+      { error: err, userId: getUser(res).userId, formId },
+      "Form deletion failed",
+    );
     return res.status(500).json({ message: FORM_ERROR_MESSAGE });
   }
 });

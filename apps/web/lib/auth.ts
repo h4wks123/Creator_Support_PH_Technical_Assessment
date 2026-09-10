@@ -1,4 +1,5 @@
 const AUTH_COOKIE = "auth_token";
+export const AUTH_CHANGE_EVENT = "auth-token-changed";
 const ONE_DAY_IN_SECONDS = 86400;
 
 const readAuthToken = () => {
@@ -36,6 +37,7 @@ export const saveAuthToken = (token: string) => {
   }
 
   document.cookie = `${AUTH_COOKIE}=${token}; path=/; max-age=${ONE_DAY_IN_SECONDS}; SameSite=Lax`;
+  window.dispatchEvent(new Event(AUTH_CHANGE_EVENT));
 };
 
 export const clearAuthToken = () => {
@@ -44,6 +46,7 @@ export const clearAuthToken = () => {
   }
 
   document.cookie = `${AUTH_COOKIE}=; path=/; max-age=0; SameSite=Lax`;
+  window.dispatchEvent(new Event(AUTH_CHANGE_EVENT));
 };
 
 export const getLoggedInEmail = () => {

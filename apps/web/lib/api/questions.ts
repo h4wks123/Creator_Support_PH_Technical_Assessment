@@ -1,6 +1,8 @@
 import { getAuthToken } from "@/lib/auth";
 import type { FormQuestion, QuestionType } from "@/types/forms";
 
+const API_URL = process.env.NEXT_PUBLIC_APP_API_URL || "http://localhost:5000";
+
 const QUESTION_TYPE_IDS: Record<QuestionType, number> = {
   short_text: 1,
   long_text: 2,
@@ -39,7 +41,7 @@ const QUESTION_TYPES: QuestionType[] = [
 
 export async function getQuestions(formId: string): Promise<FormQuestion[]> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_API_URL}/api/forms/${formId}/questions`,
+    `${API_URL}/api/forms/${formId}/questions`,
     {
       headers: { Authorization: `Bearer ${getAuthToken()}` },
     },
@@ -102,7 +104,7 @@ function getConfig(question: FormQuestion): Record<string, unknown> {
 
 export async function createQuestion(formId: string, question: FormQuestion) {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_API_URL}/api/forms/${formId}/questions`,
+    `${API_URL}/api/forms/${formId}/questions`,
     {
       method: "POST",
       headers: {
