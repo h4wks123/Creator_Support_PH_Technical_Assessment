@@ -1,7 +1,6 @@
 "use client";
 
 import { toast } from "react-toastify";
-import { Bounce } from "react-toastify/unstyled";
 
 const toaster = (status: number, message: string) => {
   const toasterOutput = () => {

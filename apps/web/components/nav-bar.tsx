@@ -1,12 +1,13 @@
 "use client";
 
 import { Button } from "@/components/button";
-import { clearAuthToken } from "@/lib/auth";
+import { clearAuthToken, getLoggedInEmail } from "@/lib/auth";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 export default function NavBar() {
   const router = useRouter();
+  const email = getLoggedInEmail();
 
   const handleLogout = () => {
     clearAuthToken();
@@ -28,9 +29,16 @@ export default function NavBar() {
             Creator Support <span className="text-primary">PH</span>
           </h3>
         </div>
-        <Button onClick={handleLogout} className="text-white">
-          Logout
-        </Button>
+        <div className="flex items-center gap-4">
+          {email ? (
+            <p className="max-w-60 truncate text-sm font-semibold text-secondary">
+              {email}
+            </p>
+          ) : null}
+          <Button onClick={handleLogout} className="text-white">
+            Logout
+          </Button>
+        </div>
       </nav>
     </header>
   );
