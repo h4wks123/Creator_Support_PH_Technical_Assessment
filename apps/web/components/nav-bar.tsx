@@ -46,8 +46,8 @@ export default function NavBar() {
             <Image
               src="/creator_support_ph_logo_2.svg"
               alt="creator_support_ph_logo_2"
-              width={26}
-              height={26}
+              width={50}
+              height={50}
             />
             <h3 className="text-base font-bold text-secondary">
               Creator Support <span className="text-primary">PH</span>
