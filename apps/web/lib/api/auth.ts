@@ -1,10 +1,8 @@
 import type { Credentials, LoginResponse, RegisterResponse } from "@/types/api";
 
-const API_URL = process.env.NEXT_PUBLIC_APP_API_URL || "http://localhost:5000";
-
 export const loginUser = async (credentials: Credentials) => {
   const response = await fetch(
-    `${API_URL}/api/auth/login`,
+    `${process.env.NEXT_PUBLIC_APP_API_URL}/api/auth/login`,
     {
       method: "POST",
       headers: {
@@ -25,7 +23,7 @@ export const loginUser = async (credentials: Credentials) => {
 
 export const registerUser = async (credentials: Credentials) => {
   const response = await fetch(
-    `${API_URL}/api/auth/register`,
+    `${process.env.NEXT_PUBLIC_APP_API_URL}/api/auth/register`,
     {
       method: "POST",
       headers: {
