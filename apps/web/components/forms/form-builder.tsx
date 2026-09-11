@@ -241,9 +241,12 @@ export default function FormBuilder({ formId }: { formId: string }) {
             >
               Build
             </button>
-            <button type="button" className="pb-3 pt-1 text-slate-400">
+            <Link
+              href={draft.formSlug ? `/f/${draft.formSlug}/responses` : "#"}
+              className="pb-3 pt-1 text-slate-400 hover:text-primary"
+            >
               Responses (0)
-            </button>
+            </Link>
             <button type="button" className="pb-3 pt-1 text-slate-400">
               Webhook
             </button>

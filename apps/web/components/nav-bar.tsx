@@ -31,7 +31,10 @@ export default function NavBar() {
     router.refresh();
   };
 
-  const showNavbar = pathname === "/" || pathname.startsWith("/form/");
+  const showNavbar =
+    pathname === "/" ||
+    pathname.startsWith("/form/") ||
+    /^\/f\/[^/]+\/responses(?:\/|$)/.test(pathname);
 
   if (!showNavbar) return null;
 
