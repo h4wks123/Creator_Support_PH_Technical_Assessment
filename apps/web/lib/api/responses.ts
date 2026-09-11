@@ -15,7 +15,9 @@ export interface FormResponse {
   answers: FormResponseAnswer[];
 }
 
-export async function getFormResponses(formId: string): Promise<FormResponse[]> {
+export async function getFormResponses(
+  formId: string,
+): Promise<FormResponse[]> {
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_APP_API_URL}/api/forms/${formId}/responses`,
     { headers: { Authorization: `Bearer ${getAuthToken()}` } },
@@ -29,12 +31,14 @@ export async function getFormResponses(formId: string): Promise<FormResponse[]> 
 export async function getFormResponse(
   formId: string,
   responseId: string,
+  authToken = getAuthToken(),
 ): Promise<FormResponse> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_API_URL}/api/forms/${formId}/responses/${responseId}`,
-    { headers: { Authorization: `Bearer ${getAuthToken()}` } },
+    `${process.env.APP_API_URL}/api/forms/${formId}/responses/${responseId}`,
+    { headers: { Authorization: `Bearer ${authToken}` } },
   );
   const data = (await response.json()) as { response?: FormResponse };
-  if (!response.ok || !data.response) throw new Error("Unable to load response");
+  if (!response.ok || !data.response)
+    throw new Error("Unable to load response");
   return data.response;
 }
