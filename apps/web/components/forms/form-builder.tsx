@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/button";
 import QuestionCard from "@/components/forms/question-card";
 import {
   createQuestion as createLocalQuestion,
@@ -11,7 +10,6 @@ import {
   QuestionType,
 } from "@/types/forms";
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createForm, getForm, updateForm } from "@/lib/api/forms";
 import { getAuthToken } from "@/lib/auth";
@@ -200,59 +198,6 @@ export default function FormBuilder({ formId }: { formId: string }) {
       data-form-id={formId}
       className="min-h-[calc(100dvh-57px)] bg-[#f7f8fa] text-secondary"
     >
-      <div className="border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-360 px-5">
-          <div className="flex h-12 items-center gap-3 text-sm">
-            <Link href="/" className="text-slate-500">
-              ← All forms
-            </Link>
-            <span className="text-slate-300">|</span>
-            <strong className="text-lg">{draft.title}</strong>
-            <div className="ml-auto flex items-center gap-3">
-              <span className="text-xs text-slate-500">
-                {draft.published ? "Published" : "Draft"}
-              </span>
-              <Button
-                size="small"
-                className="h-8 w-auto px-4 text-white"
-                onClick={() => updateDraft({ published: !draft.published })}
-                disabled={isSaving || isLoading}
-              >
-                {isSaving
-                  ? "Saving..."
-                  : draft.published
-                    ? "Unpublish"
-                    : "Publish"}
-              </Button>
-              {draft.formSlug && draft.published ? (
-                <Link
-                  href={`/f/${draft.formSlug}`}
-                  className="text-xs text-primary hover:underline"
-                >
-                  View form
-                </Link>
-              ) : null}
-            </div>
-          </div>
-          <div className="flex gap-5 text-xs">
-            <button
-              type="button"
-              className="border-b-2 border-primary pb-3 pt-1"
-            >
-              Build
-            </button>
-            <Link
-              href={formId !== "new" ? `/forms/${formId}/responses` : "#"}
-              className="pb-3 pt-1 text-slate-400 hover:text-primary"
-            >
-              Responses (0)
-            </Link>
-            <button type="button" className="pb-3 pt-1 text-slate-400">
-              Webhook
-            </button>
-          </div>
-        </div>
-      </div>
       <div className="mx-auto w-full max-w-360 px-5 py-8">
         {isLoading ? (
           <div role="status" className="mb-4 text-xs text-slate-500">
