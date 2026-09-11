@@ -25,11 +25,12 @@ export interface CreateFormInput {
 
 export type UpdateFormInput = CreateFormInput;
 
-export async function getForms(): Promise<CreatedForm[]> {
+export async function getForms(authToken?: string): Promise<CreatedForm[]> {
+  const token = authToken ?? getAuthToken();
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_API_URL}/api/forms`,
+    `${process.env.APP_API_URL ?? process.env.NEXT_PUBLIC_APP_API_URL}/api/forms`,
     {
-      headers: { Authorization: `Bearer ${getAuthToken()}` },
+      headers: { Authorization: `Bearer ${token}` },
     },
   );
 
@@ -109,12 +110,16 @@ export async function updateForm(
   return data.form;
 }
 
-export async function deleteForm(formId: string): Promise<void> {
+export async function deleteForm(
+  formId: string,
+  authToken?: string,
+): Promise<void> {
+  const token = authToken ?? getAuthToken();
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_API_URL}/api/forms/${formId}`,
+    `${process.env.APP_API_URL ?? process.env.NEXT_PUBLIC_APP_API_URL}/api/forms/${formId}`,
     {
       method: "DELETE",
-      headers: { Authorization: `Bearer ${getAuthToken()}` },
+      headers: { Authorization: `Bearer ${token}` },
     },
   );
 
