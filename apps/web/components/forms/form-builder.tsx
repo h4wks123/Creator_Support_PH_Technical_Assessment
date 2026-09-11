@@ -10,9 +10,7 @@ import {
   QuestionType,
 } from "@/types/forms";
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import { createForm, getForm, updateForm } from "@/lib/api/forms";
-import { getAuthToken } from "@/lib/auth";
+import { updateForm } from "@/lib/api/forms";
 import {
   createQuestion,
   deleteQuestion,
@@ -22,71 +20,27 @@ import {
 } from "@/lib/api/questions";
 import toaster from "@/components/toaster";
 
-const initialDraft: FormDraft = {
-  title: "Untitled form",
-  description: "",
-  questions: [],
-  published: false,
-};
 const FORM_SAVE_DEBOUNCE_MS = 500;
 
-export default function FormBuilder({ formId }: { formId: string }) {
-  const router = useRouter();
+export default function FormBuilder({
+  formId,
+  initialDraft,
+}: {
+  formId: string;
+  initialDraft: FormDraft;
+}) {
   const [draft, setDraft] = useState<FormDraft>(initialDraft);
   const [isSaving, setIsSaving] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const createDraftRequest = useRef<ReturnType<typeof createForm> | null>(null);
   const saveFormTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    let isActive = true;
-
-    async function loadForm() {
-      try {
-        if (formId === "new") {
-          if (!createDraftRequest.current) {
-            createDraftRequest.current = createForm({
-              title: initialDraft.title,
-              description: initialDraft.description,
-              isPublished: false,
-            });
-          }
-          const form = await createDraftRequest.current;
-          if (isActive) router.replace(`/forms/${form.form_id}`);
-          return;
-        }
-
-        const [form, questions] = await Promise.all([
-          getForm(formId),
-          getQuestions(formId),
-        ]);
-        if (!isActive) return;
-        setDraft({
-          formSlug: form.form_slug,
-          title: form.form_title,
-          description: form.form_description ?? "",
-          published: form.form_is_published,
-          questions,
-        });
-        setIsLoading(false);
-      } catch {
-        if (!isActive) return;
-        router.replace(getAuthToken() ? "/" : "/login");
-      }
-    }
-
-    void loadForm();
-    return () => {
-      isActive = false;
-      if (saveFormTimeout.current) {
-        clearTimeout(saveFormTimeout.current);
-        saveFormTimeout.current = null;
-      }
-    };
-  }, [formId, router]);
+  useEffect(
+    () => () => {
+      if (saveFormTimeout.current) clearTimeout(saveFormTimeout.current);
+    },
+    [],
+  );
 
   const saveForm = async (nextDraft: FormDraft) => {
-    if (formId === "new") return;
     setIsSaving(true);
     try {
       await updateForm(formId, {
@@ -194,68 +148,56 @@ export default function FormBuilder({ formId }: { formId: string }) {
   };
 
   return (
-    <div
-      data-form-id={formId}
-      className="min-h-[calc(100dvh-57px)] bg-[#f7f8fa] text-secondary"
-    >
-      <div className="mx-auto w-full max-w-360 px-5 py-8">
-        {isLoading ? (
-          <div role="status" className="mb-4 text-xs text-slate-500">
-            Saving or loading form...
-          </div>
-        ) : null}
-        <section className="border-b border-slate-200 pb-6">
-          <input
-            aria-label="Form title"
-            className="w-full bg-transparent font-[Poppins] text-2xl font-semibold outline-none"
-            value={draft.title}
-            onChange={(event) => updateDraft({ title: event.target.value })}
-            disabled={isLoading || formId === "new"}
-          />
-          <textarea
-            aria-label="Form description"
-            className="mt-4 min-h-12 w-full resize-y bg-transparent text-sm text-slate-500 outline-none"
-            value={draft.description}
-            onChange={(event) =>
-              updateDraft({ description: event.target.value })
-            }
-            placeholder="Description (optional)"
-            disabled={isLoading || formId === "new"}
-          />
-        </section>
-        <section className="pt-3">
-          <p className="mb-4 text-xs text-slate-500">
-            Email address — always collected, always required.
-          </p>
-          <div className="space-y-0">
-            {draft.questions.map((question, index) => (
-              <QuestionCard
-                key={question.id}
-                question={question}
-                index={index}
-                total={draft.questions.length}
-                onChange={updateDraftQuestion}
-                onDelete={() => void removeQuestion(question)}
-                onMove={(direction) => moveQuestion(index, direction)}
-              />
-            ))}
-          </div>
-          <div className="mt-4 flex flex-wrap items-center gap-2">
-            <span className="mr-1 text-xs text-slate-500">Add question:</span>
-            {QUESTION_TYPES.map((type) => (
-              <button
-                type="button"
-                key={type}
-                className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs hover:border-primary hover:text-primary"
-                onClick={() => void addQuestion(type)}
-                disabled={isLoading || formId === "new"}
-              >
-                {QUESTION_TYPE_LABELS[type]}
-              </button>
-            ))}
-          </div>
-        </section>
-      </div>
-    </div>
+    <>
+      <section className="border-b border-slate-200 pb-6">
+        <input
+          aria-label="Form title"
+          className="w-full bg-transparent font-[Poppins] text-2xl font-semibold outline-none"
+          value={draft.title}
+          onChange={(event) => updateDraft({ title: event.target.value })}
+          disabled={isSaving}
+        />
+        <textarea
+          aria-label="Form description"
+          className="mt-4 min-h-12 w-full resize-y bg-transparent text-sm text-slate-500 outline-none"
+          value={draft.description}
+          onChange={(event) => updateDraft({ description: event.target.value })}
+          placeholder="Description (optional)"
+          disabled={isSaving}
+        />
+      </section>
+      <section className="pt-3">
+        <p className="mb-4 text-xs text-slate-500">
+          Email address — always collected, always required.
+        </p>
+        <div className="space-y-0">
+          {draft.questions.map((question, index) => (
+            <QuestionCard
+              key={question.id}
+              question={question}
+              index={index}
+              total={draft.questions.length}
+              onChange={updateDraftQuestion}
+              onDelete={() => void removeQuestion(question)}
+              onMove={(direction) => moveQuestion(index, direction)}
+            />
+          ))}
+        </div>
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <span className="mr-1 text-xs text-slate-500">Add question:</span>
+          {QUESTION_TYPES.map((type) => (
+            <button
+              type="button"
+              key={type}
+              className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs hover:border-primary hover:text-primary"
+              onClick={() => void addQuestion(type)}
+              disabled={isSaving}
+            >
+              {QUESTION_TYPE_LABELS[type]}
+            </button>
+          ))}
+        </div>
+      </section>
+    </>
   );
 }

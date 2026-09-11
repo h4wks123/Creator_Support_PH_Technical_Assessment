@@ -1,6 +1,11 @@
 import { getAuthToken } from "@/lib/auth";
 import type { FormQuestion, QuestionType } from "@/types/forms";
 
+const getApiUrl = () =>
+  typeof window === "undefined"
+    ? (process.env.APP_API_URL ?? process.env.NEXT_PUBLIC_APP_API_URL)
+    : process.env.NEXT_PUBLIC_APP_API_URL;
+
 const QUESTION_TYPE_IDS: Record<QuestionType, number> = {
   short_text: 1,
   long_text: 2,
@@ -37,13 +42,14 @@ const QUESTION_TYPES: QuestionType[] = [
   "linear_scale",
 ];
 
-export async function getQuestions(formId: string): Promise<FormQuestion[]> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_API_URL}/api/forms/${formId}/questions`,
-    {
-      headers: { Authorization: `Bearer ${getAuthToken()}` },
-    },
-  );
+export async function getQuestions(
+  formId: string,
+  authToken?: string,
+): Promise<FormQuestion[]> {
+  const token = authToken ?? getAuthToken();
+  const response = await fetch(`${getApiUrl()}/api/forms/${formId}/questions`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
 
   const data = (await response.json()) as {
     questions?: QuestionRecord[];

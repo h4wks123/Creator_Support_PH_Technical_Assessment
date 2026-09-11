@@ -1,5 +1,10 @@
 import { getAuthToken } from "@/lib/auth";
 
+const getApiUrl = () =>
+  typeof window === "undefined"
+    ? (process.env.APP_API_URL ?? process.env.NEXT_PUBLIC_APP_API_URL)
+    : process.env.NEXT_PUBLIC_APP_API_URL;
+
 export interface CreatedForm {
   form_id: string;
   form_title: string;
@@ -46,13 +51,14 @@ export async function getForms(authToken?: string): Promise<CreatedForm[]> {
   return data.forms;
 }
 
-export async function getForm(formId: string): Promise<CreatedForm> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_API_URL}/api/forms/${formId}`,
-    {
-      headers: { Authorization: `Bearer ${getAuthToken()}` },
-    },
-  );
+export async function getForm(
+  formId: string,
+  authToken?: string,
+): Promise<CreatedForm> {
+  const token = authToken ?? getAuthToken();
+  const response = await fetch(`${getApiUrl()}/api/forms/${formId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
 
   const data = (await response.json()) as {
     form?: CreatedForm;
@@ -66,18 +72,19 @@ export async function getForm(formId: string): Promise<CreatedForm> {
   return data.form;
 }
 
-export async function createForm(input: CreateFormInput): Promise<CreatedForm> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_API_URL}/api/forms`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${getAuthToken()}`,
-      },
-      body: JSON.stringify(input),
+export async function createForm(
+  input: CreateFormInput,
+  authToken?: string,
+): Promise<CreatedForm> {
+  const token = authToken ?? getAuthToken();
+  const response = await fetch(`${getApiUrl()}/api/forms`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
-  );
+    body: JSON.stringify(input),
+  });
 
   const data = (await response.json()) as CreateFormResponse;
 
