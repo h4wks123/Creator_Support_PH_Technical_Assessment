@@ -15,7 +15,8 @@
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "react-toastify": "^11.1.0",
-    "tailwind-merge": "^3.6.0"
+    "tailwind-merge": "^3.6.0",
+    "zod": "^4.5.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

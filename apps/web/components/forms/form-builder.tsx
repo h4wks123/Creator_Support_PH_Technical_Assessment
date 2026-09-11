@@ -64,6 +64,7 @@ export default function FormBuilder({ formId }: { formId: string }) {
         ]);
         if (!isActive) return;
         setDraft({
+          formSlug: form.form_slug,
           title: form.form_title,
           description: form.form_description ?? "",
           published: form.form_is_published,
@@ -223,6 +224,14 @@ export default function FormBuilder({ formId }: { formId: string }) {
                     ? "Unpublish"
                     : "Publish"}
               </Button>
+              {draft.formSlug && draft.published ? (
+                <Link
+                  href={`/f/${draft.formSlug}`}
+                  className="text-xs text-primary hover:underline"
+                >
+                  View form
+                </Link>
+              ) : null}
             </div>
           </div>
           <div className="flex gap-5 text-xs">

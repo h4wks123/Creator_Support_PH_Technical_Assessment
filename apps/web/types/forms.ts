@@ -29,6 +29,7 @@ export interface FormQuestion {
 }
 
 export interface FormDraft {
+  formSlug?: string;
   title: string;
   description: string;
   questions: FormQuestion[];

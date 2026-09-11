@@ -4,7 +4,7 @@ import { Button } from "@/components/button";
 import toaster from "@/components/toaster";
 import { registerUser } from "@/lib/api/auth";
 import { saveAuthToken } from "@/lib/auth";
-import { validateEmail, validatePassword } from "@/utils/validation";
+import { validateEmail, validatePassword } from "@/utils/utils";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";

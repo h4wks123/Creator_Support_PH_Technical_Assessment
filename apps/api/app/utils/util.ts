@@ -11,7 +11,7 @@ import type {
   SubmitResponseInput,
 } from "../types/response-types.ts";
 
-const emailSchema = z.string().trim().email();
+const emailSchema = z.email();
 const passwordSchema = z
   .string()
   .min(8)
