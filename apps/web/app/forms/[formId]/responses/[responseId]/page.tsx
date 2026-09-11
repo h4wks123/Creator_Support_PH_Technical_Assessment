@@ -19,19 +19,13 @@ export default async function ResponseDetailPage({
 
   return (
     <main className="min-h-[calc(100dvh-140px)] bg-foreground px-5 py-8 text-secondary">
-      <div className="mx-auto max-w-3xl">
+      <section className="max-w-360 px-5 mx-auto">
         <div className="mb-6 flex items-center gap-3">
           <Link
             href={`/forms/${formId}/responses`}
             className="text-sm text-slate-500 hover:text-primary"
           >
             ← All responses
-          </Link>
-          <Link
-            href={`/forms/${formId}`}
-            className="ml-auto text-sm text-slate-500 hover:text-primary"
-          >
-            Builder
           </Link>
         </div>
         <article className="rounded-xl border border-slate-200 bg-white shadow-sm">
@@ -66,7 +60,7 @@ export default async function ResponseDetailPage({
             )}
           </div>
         </article>
-      </div>
+      </section>
     </main>
   );
 }

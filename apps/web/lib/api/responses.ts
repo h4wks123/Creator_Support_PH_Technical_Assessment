@@ -28,10 +28,12 @@ export type FormResponse = z.infer<typeof formResponseSchema>;
 
 export async function getFormResponses(
   formId: string,
+  authToken?: string,
 ): Promise<FormResponse[]> {
+  const token = authToken ?? getAuthToken();
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_API_URL}/api/forms/${formId}/responses`,
-    { headers: { Authorization: `Bearer ${getAuthToken()}` } },
+    `${process.env.APP_API_URL}/api/forms/${formId}/responses`,
+    { headers: { Authorization: `Bearer ${token}` } },
   );
   const data = formResponsesPayloadSchema.safeParse(await response.json());
   if (!response.ok) throw new Error("Unable to load responses");
