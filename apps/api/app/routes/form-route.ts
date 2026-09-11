@@ -3,7 +3,7 @@ import type { Response } from "express";
 import { pool } from "../config/psql-db.ts";
 import { verifyJWT } from "../middleware/auth-middleware.ts";
 import type { AuthenticatedUser } from "../types/auth-types.ts";
-import { parseCreateForm } from "../utils/form-validation.ts";
+import { parseCreateForm, parseUpdateForm } from "../utils/form-validation.ts";
 import { logger } from "../utils/logger.ts";
 import { createSlug } from "../utils/slug.ts";
 
@@ -103,6 +103,60 @@ formRoutes.delete("/:formId", async (req, res) => {
     logger.error(
       { error: err, userId: getUser(res).userId, formId },
       "Form deletion failed",
+    );
+    return res.status(500).json({ message: FORM_ERROR_MESSAGE });
+  }
+});
+
+formRoutes.patch("/:formId", async (req, res) => {
+  const { formId } = req.params;
+  const form = parseUpdateForm(req.body);
+
+  if (!form) {
+    logger.warn(
+      { userId: getUser(res).userId, formId },
+      "Invalid form update payload",
+    );
+    return res.status(400).json({ message: FORM_ERROR_MESSAGE });
+  }
+
+  try {
+    const result = await pool.query(
+      `UPDATE forms
+       SET form_title = $1,
+           form_description = $2,
+           form_is_published = $3,
+           form_published_at = CASE WHEN $3 THEN COALESCE(form_published_at, CURRENT_TIMESTAMP) ELSE NULL END,
+           form_updated_at = CURRENT_TIMESTAMP
+       WHERE form_id = $4 AND form_owner_id = $5
+       RETURNING form_id, form_owner_id, form_title, form_description, form_slug,
+                 form_is_published, form_published_at, form_created_at, form_updated_at`,
+      [
+        form.title,
+        form.description,
+        form.isPublished,
+        formId,
+        getUser(res).userId,
+      ],
+    );
+
+    if (result.rowCount !== 1) {
+      logger.warn(
+        { userId: getUser(res).userId, formId },
+        "Form update requested for an unavailable form",
+      );
+      return res.status(404).json({ message: FORM_ERROR_MESSAGE });
+    }
+
+    logger.info(
+      { userId: getUser(res).userId, formId, isPublished: form.isPublished },
+      "Form updated",
+    );
+    return res.status(200).json({ form: result.rows[0] });
+  } catch (err) {
+    logger.error(
+      { error: err, userId: getUser(res).userId, formId },
+      "Form update failed",
     );
     return res.status(500).json({ message: FORM_ERROR_MESSAGE });
   }

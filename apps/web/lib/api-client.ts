@@ -14,10 +14,6 @@ export const loginUser = async (credentials: Credentials) => {
     },
   );
 
-  const contentType = response.headers.get("content-type") ?? "";
-  if (!contentType.includes("application/json")) {
-    throw new Error("Unable to sign in");
-  }
   const data: LoginResponse = await response.json();
 
   if (!response.ok) {
@@ -39,10 +35,6 @@ export const registerUser = async (credentials: Credentials) => {
     },
   );
 
-  const contentType = response.headers.get("content-type") ?? "";
-  if (!contentType.includes("application/json")) {
-    throw new Error("Unable to register");
-  }
   const data: RegisterResponse = await response.json();
 
   if (!response.ok) {

@@ -73,9 +73,6 @@ CREATE TABLE IF NOT EXISTS answers (
 );
 
 CREATE INDEX IF NOT EXISTS forms_owner_id_idx ON forms (form_owner_id);
-CREATE UNIQUE INDEX IF NOT EXISTS questions_active_form_order_uidx
-    ON questions (question_form_id, question_order)
-    WHERE question_deleted_at IS NULL;
 CREATE INDEX IF NOT EXISTS responses_form_submitted_idx
     ON responses (response_form_id, response_submitted_at DESC);
 CREATE INDEX IF NOT EXISTS answers_response_order_idx

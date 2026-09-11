@@ -25,18 +25,12 @@ export interface CreateFormInput {
   isPublished: boolean;
 }
 
-export async function getForms(): Promise<CreatedForm[]> {
-  const response = await fetch(
-    `${API_URL}/api/forms`,
-    {
-      headers: { Authorization: `Bearer ${getAuthToken()}` },
-    },
-  );
+export type UpdateFormInput = CreateFormInput;
 
-  const contentType = response.headers.get("content-type") ?? "";
-  if (!contentType.includes("application/json")) {
-    throw new Error("Unable to load forms");
-  }
+export async function getForms(): Promise<CreatedForm[]> {
+  const response = await fetch(`${API_URL}/api/forms`, {
+    headers: { Authorization: `Bearer ${getAuthToken()}` },
+  });
 
   const data = (await response.json()) as {
     forms?: CreatedForm[];
@@ -51,18 +45,9 @@ export async function getForms(): Promise<CreatedForm[]> {
 }
 
 export async function getForm(formId: string): Promise<CreatedForm> {
-  const response = await fetch(
-    `${API_URL}/api/forms/${formId}`,
-    {
-      headers: { Authorization: `Bearer ${getAuthToken()}` },
-    },
-  );
-
-  const contentType = response.headers.get("content-type") ?? "";
-
-  if (!contentType.includes("application/json")) {
-    throw new Error("Unable to load form");
-  }
+  const response = await fetch(`${API_URL}/api/forms/${formId}`, {
+    headers: { Authorization: `Bearer ${getAuthToken()}` },
+  });
 
   const data = (await response.json()) as {
     form?: CreatedForm;
@@ -77,23 +62,14 @@ export async function getForm(formId: string): Promise<CreatedForm> {
 }
 
 export async function createForm(input: CreateFormInput): Promise<CreatedForm> {
-  const response = await fetch(
-    `${API_URL}/api/forms`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${getAuthToken()}`,
-      },
-      body: JSON.stringify(input),
+  const response = await fetch(`${API_URL}/api/forms`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getAuthToken()}`,
     },
-  );
-
-  const contentType = response.headers.get("content-type") ?? "";
-
-  if (!contentType.includes("application/json")) {
-    throw new Error("Unable to create form");
-  }
+    body: JSON.stringify(input),
+  });
 
   const data = (await response.json()) as CreateFormResponse;
 
@@ -104,16 +80,30 @@ export async function createForm(input: CreateFormInput): Promise<CreatedForm> {
   return data.form;
 }
 
+export async function updateForm(
+  formId: string,
+  input: UpdateFormInput,
+): Promise<CreatedForm> {
+  const response = await fetch(`${API_URL}/api/forms/${formId}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getAuthToken()}`,
+    },
+    body: JSON.stringify(input),
+  });
+
+  const data = (await response.json()) as CreateFormResponse;
+  if (!response.ok) throw new Error(data.message ?? "Unable to save form");
+  if (!data.form) throw new Error("Unable to save form");
+  return data.form;
+}
+
 export async function deleteForm(formId: string): Promise<void> {
   const response = await fetch(`${API_URL}/api/forms/${formId}`, {
     method: "DELETE",
     headers: { Authorization: `Bearer ${getAuthToken()}` },
   });
-
-  const contentType = response.headers.get("content-type") ?? "";
-  if (!contentType.includes("application/json")) {
-    throw new Error("Unable to delete form");
-  }
 
   const data = (await response.json()) as { message?: string };
   if (!response.ok) throw new Error(data.message ?? "Unable to delete form");

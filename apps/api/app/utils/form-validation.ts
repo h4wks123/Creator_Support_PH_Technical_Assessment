@@ -31,6 +31,23 @@ export const parseCreateForm = (body: unknown): CreateFormInput | null => {
   return { title, description, isPublished };
 };
 
+export const parseUpdateForm = (body: unknown): CreateFormInput | null => {
+  if (!isRecord(body)) return null;
+
+  const input = body as CreateFormBody;
+  const title = typeof input.title === "string" ? input.title.trim() : "";
+  const description =
+    input.description === null
+      ? null
+      : typeof input.description === "string"
+        ? input.description.trim()
+        : null;
+  const isPublished = input.isPublished;
+
+  if (!title || typeof isPublished !== "boolean") return null;
+  return { title, description, isPublished };
+};
+
 export const parseCreateQuestion = (
   body: unknown,
 ): CreateQuestionInput | null => {

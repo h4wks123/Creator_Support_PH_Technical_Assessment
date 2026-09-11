@@ -22,6 +22,7 @@ services:
       context: ./apps/api
       dockerfile: dockerfile
     container_name: apps_api
+    command: npm run dev
     ports:
       - "5000:5000"
     volumes:

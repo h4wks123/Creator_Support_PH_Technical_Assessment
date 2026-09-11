@@ -46,10 +46,7 @@ export async function getQuestions(formId: string): Promise<FormQuestion[]> {
       headers: { Authorization: `Bearer ${getAuthToken()}` },
     },
   );
-  const contentType = response.headers.get("content-type") ?? "";
-  if (!contentType.includes("application/json")) {
-    throw new Error("Unable to load questions");
-  }
+
   const data = (await response.json()) as {
     questions?: QuestionRecord[];
     message?: string;
@@ -121,17 +118,64 @@ export async function createQuestion(formId: string, question: FormQuestion) {
     },
   );
 
-  const contentType = response.headers.get("content-type") ?? "";
-  if (!contentType.includes("application/json")) {
-    throw new Error("Unable to create question");
-  }
-
   const data = (await response.json()) as CreateQuestionResponse;
   if (!response.ok)
     throw new Error(data.message ?? "Unable to create question");
   if (!data.question)
     throw new Error("The API returned an invalid question response");
   return data.question;
+}
+
+export async function updateQuestion(formId: string, question: FormQuestion) {
+  const response = await fetch(
+    `${API_URL}/api/forms/${formId}/questions/${question.id}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${getAuthToken()}`,
+      },
+      body: JSON.stringify({
+        label: question.label,
+        type: QUESTION_TYPE_IDS[question.type],
+        order: question.order,
+        required: question.required,
+        config: getConfig(question),
+      }),
+    },
+  );
+
+  const data = (await response.json()) as CreateQuestionResponse;
+  if (!response.ok) throw new Error(data.message ?? "Unable to save question");
+  if (!data.question) throw new Error("Unable to save question");
+  return data.question;
+}
+
+export async function reorderQuestions(formId: string, questionIds: string[]) {
+  const response = await fetch(`${API_URL}/api/forms/${formId}/questions/reorder`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getAuthToken()}`,
+    },
+    body: JSON.stringify({ questionIds }),
+  });
+
+  const data = (await response.json()) as { message?: string };
+  if (!response.ok) throw new Error(data.message ?? "Unable to reorder questions");
+}
+
+export async function deleteQuestion(formId: string, questionId: string) {
+  const response = await fetch(
+    `${API_URL}/api/forms/${formId}/questions/${questionId}`,
+    {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${getAuthToken()}` },
+    },
+  );
+
+  const data = (await response.json()) as { message?: string };
+  if (!response.ok) throw new Error(data.message ?? "Unable to delete question");
 }
 
 export async function createQuestions(

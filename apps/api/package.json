@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "start": "tsx app/server.ts",
-    "dev": "tsx app/server.ts",
+    "dev": "tsx watch app/server.ts",
     "db:schema": "PGPASSWORD=${DB_PASS:-$DB_PASSWORD} psql -h ${DB_HOST:-localhost} -p ${DB_PORT:-5432} -U ${DB_USER} -d ${DB_NAME} -v ON_ERROR_STOP=1 -f db/schema.sql",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
