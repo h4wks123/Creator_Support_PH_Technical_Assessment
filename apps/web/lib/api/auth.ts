@@ -1,6 +1,17 @@
-import type { Credentials, LoginResponse, RegisterResponse } from "@/types/api";
+import {
+  credentialsSchema,
+  loginResponseSchema,
+  registerResponseSchema,
+  type Credentials,
+} from "@/types/api";
+
+const parseError = async (response: Response) => {
+  const data = await response.json().catch(() => null);
+  return typeof data?.message === "string" ? data.message : "Authentication failed";
+};
 
 export const loginUser = async (credentials: Credentials) => {
+  const input = credentialsSchema.parse(credentials);
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_APP_API_URL}/api/auth/login`,
     {
@@ -8,20 +19,16 @@ export const loginUser = async (credentials: Credentials) => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(credentials),
+      body: JSON.stringify(input),
     },
   );
 
-  const data: LoginResponse = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.message ?? "Unable to sign in");
-  }
-
-  return data;
+  if (!response.ok) throw new Error(await parseError(response));
+  return loginResponseSchema.parse(await response.json());
 };
 
 export const registerUser = async (credentials: Credentials) => {
+  const input = credentialsSchema.parse(credentials);
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_APP_API_URL}/api/auth/register`,
     {
@@ -29,15 +36,10 @@ export const registerUser = async (credentials: Credentials) => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(credentials),
+      body: JSON.stringify(input),
     },
   );
 
-  const data: RegisterResponse = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.message ?? "Unable to register");
-  }
-
-  return data;
+  if (!response.ok) throw new Error(await parseError(response));
+  return registerResponseSchema.parse(await response.json());
 };

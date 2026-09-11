@@ -1,56 +1,35 @@
-import type { FormQuestion, QuestionType } from "@/types/forms";
+import { publicFormRecordSchema } from "@/types/api";
+import { QUESTION_TYPES, formQuestionSchema } from "@/types/forms";
+import { z } from "zod";
 
 const getApiUrl = () =>
   typeof window === "undefined"
     ? (process.env.APP_API_URL ?? process.env.NEXT_PUBLIC_APP_API_URL)
     : process.env.NEXT_PUBLIC_APP_API_URL;
 
-export interface PublicForm {
-  id: string;
-  title: string;
-  description: string | null;
-  slug: string;
-  questions: FormQuestion[];
-}
+export const publicFormSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string().nullable(),
+  slug: z.string(),
+  questions: z.array(formQuestionSchema),
+});
+export type PublicForm = z.infer<typeof publicFormSchema>;
 
-const QUESTION_TYPES: QuestionType[] = [
-  "short_text",
-  "long_text",
-  "date",
-  "dropdown",
-  "multi_select",
-  "multiple_choice",
-  "checkboxes",
-  "linear_scale",
-];
+const publicFormPayloadSchema = z.object({ form: publicFormRecordSchema });
 
 export async function getPublicForm(slug: string): Promise<PublicForm> {
   const response = await fetch(
     `${getApiUrl()}/api/public/forms/${encodeURIComponent(slug)}`,
   );
-  const data = (await response.json()) as {
-    form?: {
-      form_id: string;
-      form_title: string;
-      form_description: string | null;
-      form_slug: string;
-      questions: Array<{
-        question_id: string;
-        question_label: string;
-        question_type: number;
-        question_order: number;
-        question_is_required: boolean;
-        question_config: Record<string, unknown>;
-      }>;
-    };
-  };
-  if (!response.ok || !data.form) throw new Error("Unable to load form");
-  return {
-    id: data.form.form_id,
-    title: data.form.form_title,
-    description: data.form.form_description,
-    slug: data.form.form_slug,
-    questions: data.form.questions.map((question) => {
+  if (!response.ok) throw new Error("Unable to load form");
+  const data = publicFormPayloadSchema.parse(await response.json()).form;
+  const publicForm = {
+    id: data.form_id,
+    title: data.form_title,
+    description: data.form_description,
+    slug: data.form_slug,
+    questions: data.questions.map((question) => {
       const config = question.question_config ?? {};
       return {
         id: question.question_id,
@@ -77,6 +56,7 @@ export async function getPublicForm(slug: string): Promise<PublicForm> {
       };
     }),
   };
+  return publicFormSchema.parse(publicForm);
 }
 
 export async function submitPublicForm(

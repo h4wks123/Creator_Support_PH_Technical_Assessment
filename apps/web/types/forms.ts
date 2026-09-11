@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 export const QUESTION_TYPES = [
   "short_text",
   "long_text",
@@ -9,32 +11,38 @@ export const QUESTION_TYPES = [
   "linear_scale",
 ] as const;
 
-export type QuestionType = (typeof QUESTION_TYPES)[number];
+export const questionTypeSchema = z.enum(QUESTION_TYPES);
+export type QuestionType = z.infer<typeof questionTypeSchema>;
 
-export interface LinearScaleConfig {
-  min: number;
-  max: number;
-  minLabel: string;
-  maxLabel: string;
-}
+export const linearScaleConfigSchema = z
+  .object({
+    min: z.number().int(),
+    max: z.number().int(),
+    minLabel: z.string(),
+    maxLabel: z.string(),
+  })
+  .refine(({ min, max }) => min <= max);
+export type LinearScaleConfig = z.infer<typeof linearScaleConfigSchema>;
 
-export interface FormQuestion {
-  id: string;
-  label: string;
-  type: QuestionType;
-  order: number;
-  required: boolean;
-  options: string[];
-  linearScale?: LinearScaleConfig;
-}
+export const formQuestionSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  type: questionTypeSchema,
+  order: z.number().int().positive(),
+  required: z.boolean(),
+  options: z.array(z.string()),
+  linearScale: linearScaleConfigSchema.optional(),
+});
+export type FormQuestion = z.infer<typeof formQuestionSchema>;
 
-export interface FormDraft {
-  formSlug?: string;
-  title: string;
-  description: string;
-  questions: FormQuestion[];
-  published: boolean;
-}
+export const formDraftSchema = z.object({
+  formSlug: z.string().optional(),
+  title: z.string(),
+  description: z.string(),
+  questions: z.array(formQuestionSchema),
+  published: z.boolean(),
+});
+export type FormDraft = z.infer<typeof formDraftSchema>;
 
 export const QUESTION_TYPE_LABELS: Record<QuestionType, string> = {
   short_text: "Short text",

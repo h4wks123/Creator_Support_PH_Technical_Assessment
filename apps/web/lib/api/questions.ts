@@ -1,5 +1,12 @@
 import { getAuthToken } from "@/lib/auth";
-import type { FormQuestion, QuestionType } from "@/types/forms";
+import {
+  apiQuestionRecordSchema,
+  messageResponseSchema,
+  questionIdResponseSchema,
+  questionIdsResponseSchema,
+} from "@/types/api";
+import { QUESTION_TYPES, type FormQuestion, type QuestionType } from "@/types/forms";
+import { z } from "zod";
 
 const getApiUrl = () =>
   typeof window === "undefined"
@@ -17,30 +24,8 @@ const QUESTION_TYPE_IDS: Record<QuestionType, number> = {
   linear_scale: 8,
 };
 
-interface CreateQuestionResponse {
-  question: { question_id: string; question_form_id: string };
-  message?: string;
-}
-
-interface QuestionRecord {
-  question_id: string;
-  question_label: string;
-  question_type: number;
-  question_order: number;
-  question_is_required: boolean;
-  question_config: Record<string, unknown>;
-}
-
-const QUESTION_TYPES: QuestionType[] = [
-  "short_text",
-  "long_text",
-  "date",
-  "dropdown",
-  "multi_select",
-  "multiple_choice",
-  "checkboxes",
-  "linear_scale",
-];
+const questionsPayloadSchema = z.object({ questions: z.array(apiQuestionRecordSchema) });
+const questionPayloadSchema = z.object({ question: apiQuestionRecordSchema });
 
 export async function getQuestions(
   formId: string,
@@ -51,14 +36,9 @@ export async function getQuestions(
     headers: { Authorization: `Bearer ${token}` },
   });
 
-  const data = (await response.json()) as {
-    questions?: QuestionRecord[];
-    message?: string;
-  };
-  if (!response.ok)
-    throw new Error(data.message ?? "Unable to fetch questions");
+  if (!response.ok) throw new Error("Unable to fetch questions");
 
-  return (data.questions ?? []).map((question) => {
+  return questionsPayloadSchema.parse(await response.json()).questions.map((question) => {
     const config = question.question_config;
     return {
       id: question.question_id,
@@ -121,12 +101,8 @@ export async function createQuestion(formId: string, question: FormQuestion) {
     },
   );
 
-  const data = (await response.json()) as CreateQuestionResponse;
-  if (!response.ok)
-    throw new Error(data.message ?? "Unable to create question");
-  if (!data.question)
-    throw new Error("The API returned an invalid question response");
-  return data.question;
+  if (!response.ok) throw new Error("Unable to create question");
+  return questionPayloadSchema.parse(await response.json()).question;
 }
 
 export async function updateQuestion(formId: string, question: FormQuestion) {
@@ -148,10 +124,8 @@ export async function updateQuestion(formId: string, question: FormQuestion) {
     },
   );
 
-  const data = (await response.json()) as CreateQuestionResponse;
-  if (!response.ok) throw new Error(data.message ?? "Unable to save question");
-  if (!data.question) throw new Error("Unable to save question");
-  return data.question;
+  if (!response.ok) throw new Error("Unable to save question");
+  return questionPayloadSchema.parse(await response.json()).question;
 }
 
 export async function reorderQuestions(formId: string, questionIds: string[]) {
@@ -167,9 +141,11 @@ export async function reorderQuestions(formId: string, questionIds: string[]) {
     },
   );
 
-  const data = (await response.json()) as { message?: string };
-  if (!response.ok)
-    throw new Error(data.message ?? "Unable to reorder questions");
+  if (!response.ok) {
+    const data = messageResponseSchema.safeParse(await response.json());
+    throw new Error(data.success ? data.data.message : "Unable to reorder questions");
+  }
+  questionIdsResponseSchema.parse(await response.json());
 }
 
 export async function deleteQuestion(formId: string, questionId: string) {
@@ -181,9 +157,11 @@ export async function deleteQuestion(formId: string, questionId: string) {
     },
   );
 
-  const data = (await response.json()) as { message?: string };
-  if (!response.ok)
-    throw new Error(data.message ?? "Unable to delete question");
+  if (!response.ok) {
+    const data = messageResponseSchema.safeParse(await response.json());
+    throw new Error(data.success ? data.data.message : "Unable to delete question");
+  }
+  questionIdResponseSchema.parse(await response.json());
 }
 
 export async function createQuestions(

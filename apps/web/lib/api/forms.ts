@@ -1,36 +1,33 @@
 import { getAuthToken } from "@/lib/auth";
+import { z } from "zod";
+import {
+  formListRecordSchema,
+  formRecordSchema,
+  type FormListRecord,
+  type FormRecord,
+} from "@/types/api";
 
 const getApiUrl = () =>
   typeof window === "undefined"
     ? (process.env.APP_API_URL ?? process.env.NEXT_PUBLIC_APP_API_URL)
     : process.env.NEXT_PUBLIC_APP_API_URL;
 
-export interface CreatedForm {
-  form_id: string;
-  form_title: string;
-  form_description: string | null;
-  form_slug: string;
-  form_is_published: boolean;
-  form_published_at?: string | null;
-  form_created_at?: string;
-  form_updated_at?: string;
-  question_count?: number;
-}
+export type CreatedForm = FormRecord;
 
-interface CreateFormResponse {
-  form: CreatedForm;
-  message?: string;
-}
+const formPayloadSchema = z.object({ form: formRecordSchema });
+const formsPayloadSchema = z.object({ forms: z.array(formListRecordSchema) });
+const deleteFormResponseSchema = z.object({ formId: z.string() });
 
-export interface CreateFormInput {
-  title: string;
-  description: string;
-  isPublished: boolean;
-}
+const createFormInputSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  isPublished: z.boolean(),
+});
+export type CreateFormInput = z.infer<typeof createFormInputSchema>;
 
 export type UpdateFormInput = CreateFormInput;
 
-export async function getForms(authToken?: string): Promise<CreatedForm[]> {
+export async function getForms(authToken?: string): Promise<FormListRecord[]> {
   const token = authToken ?? getAuthToken();
   const response = await fetch(
     `${process.env.APP_API_URL ?? process.env.NEXT_PUBLIC_APP_API_URL}/api/forms`,
@@ -39,16 +36,8 @@ export async function getForms(authToken?: string): Promise<CreatedForm[]> {
     },
   );
 
-  const data = (await response.json()) as {
-    forms?: CreatedForm[];
-    message?: string;
-  };
-  if (!response.ok) throw new Error(data.message ?? "Unable to fetch forms");
-
-  if (!data.forms)
-    throw new Error("The API returned an invalid forms response");
-
-  return data.forms;
+  if (!response.ok) throw new Error("Unable to fetch forms");
+  return formsPayloadSchema.parse(await response.json()).forms;
 }
 
 export async function getForm(
@@ -60,22 +49,15 @@ export async function getForm(
     headers: { Authorization: `Bearer ${token}` },
   });
 
-  const data = (await response.json()) as {
-    form?: CreatedForm;
-    message?: string;
-  };
-
-  if (!response.ok) throw new Error(data.message ?? "Unable to fetch form");
-
-  if (!data.form) throw new Error("The API returned an invalid form response");
-
-  return data.form;
+  if (!response.ok) throw new Error("Unable to fetch form");
+  return formPayloadSchema.parse(await response.json()).form;
 }
 
 export async function createForm(
   input: CreateFormInput,
   authToken?: string,
 ): Promise<CreatedForm> {
+  createFormInputSchema.parse(input);
   const token = authToken ?? getAuthToken();
   const response = await fetch(`${getApiUrl()}/api/forms`, {
     method: "POST",
@@ -86,19 +68,15 @@ export async function createForm(
     body: JSON.stringify(input),
   });
 
-  const data = (await response.json()) as CreateFormResponse;
-
-  if (!response.ok) throw new Error(data.message ?? "Unable to create form");
-
-  if (!data.form) throw new Error("The API returned an invalid form response");
-
-  return data.form;
+  if (!response.ok) throw new Error("Unable to create form");
+  return formPayloadSchema.parse(await response.json()).form;
 }
 
 export async function updateForm(
   formId: string,
   input: UpdateFormInput,
 ): Promise<CreatedForm> {
+  createFormInputSchema.parse(input);
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_APP_API_URL}/api/forms/${formId}`,
     {
@@ -111,10 +89,8 @@ export async function updateForm(
     },
   );
 
-  const data = (await response.json()) as CreateFormResponse;
-  if (!response.ok) throw new Error(data.message ?? "Unable to save form");
-  if (!data.form) throw new Error("Unable to save form");
-  return data.form;
+  if (!response.ok) throw new Error("Unable to save form");
+  return formPayloadSchema.parse(await response.json()).form;
 }
 
 export async function deleteForm(
@@ -130,6 +106,6 @@ export async function deleteForm(
     },
   );
 
-  const data = (await response.json()) as { message?: string };
-  if (!response.ok) throw new Error(data.message ?? "Unable to delete form");
+  if (!response.ok) throw new Error("Unable to delete form");
+  deleteFormResponseSchema.parse(await response.json());
 }
