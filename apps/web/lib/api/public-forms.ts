@@ -1,5 +1,10 @@
 import type { FormQuestion, QuestionType } from "@/types/forms";
 
+const getApiUrl = () =>
+  typeof window === "undefined"
+    ? (process.env.APP_API_URL ?? process.env.NEXT_PUBLIC_APP_API_URL)
+    : process.env.NEXT_PUBLIC_APP_API_URL;
+
 export interface PublicForm {
   id: string;
   title: string;
@@ -21,7 +26,7 @@ const QUESTION_TYPES: QuestionType[] = [
 
 export async function getPublicForm(slug: string): Promise<PublicForm> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_API_URL}/api/public/forms/${encodeURIComponent(slug)}`,
+    `${getApiUrl()}/api/public/forms/${encodeURIComponent(slug)}`,
   );
   const data = (await response.json()) as {
     form?: {
@@ -80,7 +85,7 @@ export async function submitPublicForm(
   answers: Array<{ questionId: string; value: unknown }>,
 ) {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_API_URL}/api/public/forms/${encodeURIComponent(slug)}/responses`,
+    `${getApiUrl()}/api/public/forms/${encodeURIComponent(slug)}/responses`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
