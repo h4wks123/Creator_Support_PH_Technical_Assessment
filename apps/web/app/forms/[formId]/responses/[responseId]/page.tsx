@@ -4,19 +4,21 @@ import { redirect } from "next/navigation";
 import { getFormResponse } from "@/lib/api/responses";
 import { formatDate, formatValue } from "@/utils/utils";
 
+type ResponseDetailPageProps = {
+  params: Promise<{ formId: string; responseId: string }>;
+};
+
 export default async function ResponseDetailPage({
   params,
-}: {
-  params: Promise<{ formId: string; responseId: string }>;
-}) {
+}: ResponseDetailPageProps) {
   const { formId, responseId } = await params;
-  const authToken = (await cookies()).get("auth_token")?.value ?? "";
+  const authToken = (await cookies()).get("auth_token")?.value;
   const response = await getFormResponse(formId, responseId, authToken).catch(
     () => redirect("/"),
   );
 
   return (
-    <main className="min-h-[calc(100dvh-57px)] bg-[#f7f8fa] px-5 py-8 text-secondary">
+    <main className="min-h-[calc(100dvh-140px)] bg-foreground px-5 py-8 text-secondary">
       <div className="mx-auto max-w-3xl">
         <div className="mb-6 flex items-center gap-3">
           <Link
