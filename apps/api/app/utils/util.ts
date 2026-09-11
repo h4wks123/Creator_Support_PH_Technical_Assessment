@@ -5,7 +5,11 @@ import {
   QUESTION_TYPE_MIN,
   type CreateQuestionInput,
 } from "../types/question-types.ts";
-import type { SubmitResponseInput } from "../types/response-types.ts";
+import type {
+  QuestionForResponseValidation,
+  ResponseValidationFailure,
+  SubmitResponseInput,
+} from "../types/response-types.ts";
 
 const emailSchema = z.string().trim().email();
 const passwordSchema = z
@@ -82,17 +86,6 @@ export const createSlug = (title: string) => {
     .replace(/^-+|-+$/g, "");
   return `${normalizedTitle || "form"}-${crypto.randomUUID().slice(0, 8)}`;
 };
-
-export interface QuestionForResponseValidation {
-  question_id: string;
-  question_type: number;
-  question_is_required: boolean;
-  question_config: Record<string, unknown>;
-}
-export interface ResponseValidationFailure {
-  reason: string;
-  questionId?: string;
-}
 
 export const parseSubmitResponse = (
   body: unknown,
