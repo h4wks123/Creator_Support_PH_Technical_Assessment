@@ -174,7 +174,7 @@ formRoutes.post("/", async (req, res) => {
 
   try {
     const formId = crypto.randomUUID();
-    const slug = createSlug(form.title);
+    const slug = createSlug();
     const publishedAt = form.isPublished ? new Date() : null;
 
     const result = await pool.query(

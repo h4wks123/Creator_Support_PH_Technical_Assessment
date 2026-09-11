@@ -33,8 +33,8 @@ export default function NavBar() {
 
   const showNavbar =
     pathname === "/" ||
-    pathname.startsWith("/form/") ||
-    /^\/f\/[^/]+\/responses(?:\/|$)/.test(pathname);
+    pathname.startsWith("/forms/") ||
+    /^\/forms\/[^/]+\/responses(?:\/|$)/.test(pathname);
 
   if (!showNavbar) return null;
 

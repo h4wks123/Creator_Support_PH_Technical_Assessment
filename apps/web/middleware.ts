@@ -8,9 +8,9 @@ const API_URL = process.env.NEXT_PUBLIC_APP_API_URL ?? "http://localhost:5000";
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isAuthRoute = AUTH_ROUTES.includes(pathname);
-  const isResponseRoute = /^\/f\/[^/]+\/responses(?:\/|$)/.test(pathname);
+  const isResponseRoute = /^\/forms\/[^/]+\/responses(?:\/|$)/.test(pathname);
   const isProtectedRoute =
-    pathname === "/" || pathname.startsWith("/form/") || isResponseRoute;
+    pathname === "/" || pathname.startsWith("/forms/") || isResponseRoute;
 
   if (!isAuthRoute && !isProtectedRoute) {
     return NextResponse.next();
@@ -24,10 +24,10 @@ export async function middleware(request: NextRequest) {
   }
 
   if (isResponseRoute && token) {
-    const responsePath = pathname.match(/^\/f\/([^/]+)\/responses/);
-    const slug = responsePath?.[1];
+    const responsePath = pathname.match(/^\/forms\/([^/]+)\/responses/);
+    const formId = responsePath?.[1];
 
-    if (slug) {
+    if (formId) {
       try {
         const formsResponse = await fetch(`${API_URL}/api/forms`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -40,10 +40,10 @@ export async function middleware(request: NextRequest) {
 
         if (formsResponse.ok) {
           const data = (await formsResponse.json()) as {
-            forms?: Array<{ form_slug?: string }>;
+            forms?: Array<{ form_id?: string }>;
           };
           const ownsForm = data.forms?.some(
-            (form) => form.form_slug === decodeURIComponent(slug),
+            (form) => form.form_id === decodeURIComponent(formId),
           );
           if (!ownsForm)
             return NextResponse.redirect(new URL("/", request.url));
@@ -62,5 +62,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/form/:path*", "/f/:path*", "/login", "/register"],
+  matcher: ["/", "/forms/:path*", "/f/:path*", "/login", "/register"],
 };

@@ -54,7 +54,7 @@ export default function FormBuilder({ formId }: { formId: string }) {
             });
           }
           const form = await createDraftRequest.current;
-          if (isActive) router.replace(`/form/${form.form_id}`);
+          if (isActive) router.replace(`/forms/${form.form_id}`);
           return;
         }
 
@@ -242,7 +242,7 @@ export default function FormBuilder({ formId }: { formId: string }) {
               Build
             </button>
             <Link
-              href={draft.formSlug ? `/f/${draft.formSlug}/responses` : "#"}
+              href={formId !== "new" ? `/forms/${formId}/responses` : "#"}
               className="pb-3 pt-1 text-slate-400 hover:text-primary"
             >
               Responses (0)

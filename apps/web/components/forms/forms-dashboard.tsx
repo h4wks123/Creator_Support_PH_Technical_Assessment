@@ -75,7 +75,7 @@ export default function FormsDashboard() {
         <Button
           size="small"
           className="text-white"
-          onClick={() => router.push("/form/new")}
+          onClick={() => router.push("/forms/new")}
         >
           New form
         </Button>
@@ -110,7 +110,7 @@ export default function FormsDashboard() {
               <button
                 type="button"
                 className="rounded-md border border-slate-300 bg-white px-3 py-2 hover:border-primary hover:text-primary"
-                onClick={() => router.push(`/form/${form.form_id}`)}
+                onClick={() => router.push(`/forms/${form.form_id}`)}
               >
                 Edit
               </button>

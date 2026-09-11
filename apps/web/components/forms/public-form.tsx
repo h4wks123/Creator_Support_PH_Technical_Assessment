@@ -1,16 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/button";
 import toaster from "@/components/toaster";
-import { getForms } from "@/lib/api/forms";
 import {
   getPublicForm,
   submitPublicForm,
   type PublicForm,
 } from "@/lib/api/public-forms";
-import { getAuthToken } from "@/lib/auth";
 import { validatePublicForm } from "@/utils/utils";
 import type { FormQuestion } from "@/types/forms";
 
@@ -18,7 +15,6 @@ const SERVER_ERROR_MESSAGE = "Unable to submit form. Please try again.";
 type AnswerValue = string | string[] | number;
 
 export default function PublicForm({ slug }: { slug: string }) {
-  const router = useRouter();
   const [form, setForm] = useState<PublicForm | null>(null);
   const [answers, setAnswers] = useState<Record<string, AnswerValue>>({});
   const [email, setEmail] = useState("");
@@ -31,16 +27,6 @@ export default function PublicForm({ slug }: { slug: string }) {
     let active = true;
     async function load() {
       try {
-        if (getAuthToken()) {
-          const ownedForms = await getForms().catch(() => []);
-          const ownedForm = ownedForms.find(
-            (candidate) => candidate.form_slug === slug,
-          );
-          if (ownedForm) {
-            router.replace(`/form/${ownedForm.form_id}`);
-            return;
-          }
-        }
         const loadedForm = await getPublicForm(slug);
         if (active) setForm(loadedForm);
       } catch {
@@ -57,7 +43,7 @@ export default function PublicForm({ slug }: { slug: string }) {
     return () => {
       active = false;
     };
-  }, [router, slug]);
+  }, [slug]);
 
   const updateAnswer = (questionId: string, value: AnswerValue) => {
     setAnswers((current) => ({ ...current, [questionId]: value }));

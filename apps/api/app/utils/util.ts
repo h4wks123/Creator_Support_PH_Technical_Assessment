@@ -78,14 +78,7 @@ export const parseCreateQuestion = (
   return result.success ? result.data : null;
 };
 
-export const createSlug = (title: string) => {
-  const normalizedTitle = title
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-  return `${normalizedTitle || "form"}-${crypto.randomUUID().slice(0, 8)}`;
-};
+export const createSlug = () => crypto.randomUUID();
 
 export const parseSubmitResponse = (
   body: unknown,
