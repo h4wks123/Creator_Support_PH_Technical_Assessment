@@ -1,19 +1,30 @@
 import { getAuthToken } from "@/lib/auth";
+import { z } from "zod";
 
-export interface FormResponseAnswer {
-  questionId: string | null;
-  label: string;
-  type: number;
-  order: number;
-  value: unknown;
-}
+const formResponseAnswerSchema = z.object({
+  questionId: z.string().nullable(),
+  label: z.string(),
+  type: z.number(),
+  order: z.number(),
+  value: z.unknown(),
+});
 
-export interface FormResponse {
-  response_id: string;
-  response_respondent_email: string;
-  response_submitted_at: string;
-  answers: FormResponseAnswer[];
-}
+const formResponseSchema = z.object({
+  response_id: z.string(),
+  response_respondent_email: z.string(),
+  response_submitted_at: z.string(),
+  answers: z.array(formResponseAnswerSchema),
+});
+
+const formResponsesPayloadSchema = z.object({
+  responses: z.array(formResponseSchema),
+});
+
+const formResponsePayloadSchema = z.object({
+  response: formResponseSchema,
+});
+
+export type FormResponse = z.infer<typeof formResponseSchema>;
 
 export async function getFormResponses(
   formId: string,
@@ -22,10 +33,10 @@ export async function getFormResponses(
     `${process.env.NEXT_PUBLIC_APP_API_URL}/api/forms/${formId}/responses`,
     { headers: { Authorization: `Bearer ${getAuthToken()}` } },
   );
-  const data = (await response.json()) as { responses?: FormResponse[] };
+  const data = formResponsesPayloadSchema.safeParse(await response.json());
   if (!response.ok) throw new Error("Unable to load responses");
-  if (!data.responses) throw new Error("Unable to load responses");
-  return data.responses;
+  if (!data.success) throw new Error("Unable to load responses");
+  return data.data.responses;
 }
 
 export async function getFormResponse(
@@ -37,8 +48,7 @@ export async function getFormResponse(
     `${process.env.APP_API_URL}/api/forms/${formId}/responses/${responseId}`,
     { headers: { Authorization: `Bearer ${authToken}` } },
   );
-  const data = (await response.json()) as { response?: FormResponse };
-  if (!response.ok || !data.response)
-    throw new Error("Unable to load response");
-  return data.response;
+  const data = formResponsePayloadSchema.safeParse(await response.json());
+  if (!response.ok || !data.success) throw new Error("Unable to load response");
+  return data.data.response;
 }

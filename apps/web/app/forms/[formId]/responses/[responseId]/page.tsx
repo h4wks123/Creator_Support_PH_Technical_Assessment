@@ -1,20 +1,8 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { getFormResponse, type FormResponse } from "@/lib/api/responses";
-
-const formatValue = (value: unknown) => {
-  if (value == null || value === "") return "No answer";
-  if (Array.isArray(value)) return value.join(", ");
-  if (typeof value === "object") return JSON.stringify(value);
-  return String(value);
-};
-
-const formatDate = (value: string) =>
-  new Date(value).toLocaleString(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
+import { getFormResponse } from "@/lib/api/responses";
+import { formatDate, formatValue } from "@/utils/utils";
 
 export default async function ResponseDetailPage({
   params,
@@ -23,13 +11,9 @@ export default async function ResponseDetailPage({
 }) {
   const { formId, responseId } = await params;
   const authToken = (await cookies()).get("auth_token")?.value ?? "";
-
-  let response: FormResponse;
-  try {
-    response = await getFormResponse(formId, responseId, authToken);
-  } catch {
-    redirect("/");
-  }
+  const response = await getFormResponse(formId, responseId, authToken).catch(
+    () => redirect("/"),
+  );
 
   return (
     <main className="min-h-[calc(100dvh-57px)] bg-[#f7f8fa] px-5 py-8 text-secondary">

@@ -5,9 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import toaster from "@/components/toaster";
 import { getFormResponses, type FormResponse } from "@/lib/api/responses";
-
-const formatDate = (value: string) =>
-  new Date(value).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+import { formatDate } from "@/utils/utils";
 
 export default function ResponsesList({ formId }: { formId: string }) {
   const router = useRouter();
