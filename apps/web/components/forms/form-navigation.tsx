@@ -62,13 +62,10 @@ export default function FormNavigation({ formId }: { formId: string }) {
             ← All forms
           </Link>
           <span className="text-slate-300">|</span>
-          <strong className="text-lg">{form?.form_title ?? "Loading form..."}</strong>
+          <strong className="text-lg">
+            {form?.form_title ?? "Loading form..."}
+          </strong>
           <div className="ml-auto flex items-center gap-3">
-            {form ? (
-              <span className="text-xs text-slate-500">
-                {form.form_is_published ? "Published" : "Draft"}
-              </span>
-            ) : null}
             <Button
               size="small"
               className="h-8 w-auto px-4 text-white"
