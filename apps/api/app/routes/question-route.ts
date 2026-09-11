@@ -139,8 +139,6 @@ questionRoutes.patch("/:formId/questions/reorder", async (req, res) => {
   const { formId } = req.params;
   const questionIds = req.body?.questionIds;
 
-  console.log("nigger");
-
   if (
     !Array.isArray(questionIds) ||
     questionIds.length === 0 ||

@@ -111,7 +111,6 @@ export async function createQuestion(formId: string, question: FormQuestion) {
       body: JSON.stringify({
         label: question.label,
         type: QUESTION_TYPE_IDS[question.type],
-        order: question.order,
         required: question.required,
         config: getConfig(question),
       }),
