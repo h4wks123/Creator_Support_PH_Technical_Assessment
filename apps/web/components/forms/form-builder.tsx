@@ -14,6 +14,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createForm, getForm, updateForm } from "@/lib/api/forms";
+import { getAuthToken } from "@/lib/auth";
 import {
   createQuestion,
   deleteQuestion,
@@ -69,13 +70,9 @@ export default function FormBuilder({ formId }: { formId: string }) {
           questions,
         });
         setIsLoading(false);
-      } catch (error) {
+      } catch {
         if (!isActive) return;
-        toaster(
-          500,
-          error instanceof Error ? error.message : "Unable to load form",
-        );
-        setIsLoading(false);
+        router.replace(getAuthToken() ? "/" : "/login");
       }
     }
 
