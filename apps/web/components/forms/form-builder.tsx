@@ -29,6 +29,7 @@ const initialDraft: FormDraft = {
   questions: [],
   published: false,
 };
+const FORM_SAVE_DEBOUNCE_MS = 500;
 
 export default function FormBuilder({ formId }: { formId: string }) {
   const router = useRouter();
@@ -36,6 +37,7 @@ export default function FormBuilder({ formId }: { formId: string }) {
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const createDraftRequest = useRef<ReturnType<typeof createForm> | null>(null);
+  const saveFormTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     let isActive = true;
@@ -80,6 +82,10 @@ export default function FormBuilder({ formId }: { formId: string }) {
     void loadForm();
     return () => {
       isActive = false;
+      if (saveFormTimeout.current) {
+        clearTimeout(saveFormTimeout.current);
+        saveFormTimeout.current = null;
+      }
     };
   }, [formId, router]);
 
@@ -104,7 +110,11 @@ export default function FormBuilder({ formId }: { formId: string }) {
   const updateDraft = (changes: Partial<FormDraft>) => {
     const nextDraft = { ...draft, ...changes };
     setDraft(nextDraft);
-    void saveForm(nextDraft);
+    if (saveFormTimeout.current) clearTimeout(saveFormTimeout.current);
+    saveFormTimeout.current = setTimeout(() => {
+      saveFormTimeout.current = null;
+      void saveForm(nextDraft);
+    }, FORM_SAVE_DEBOUNCE_MS);
   };
 
   const updateQuestions = (questions: FormQuestion[]) => {
