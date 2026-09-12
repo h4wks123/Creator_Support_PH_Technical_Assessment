@@ -1,6 +1,6 @@
+import MultiSelectInput from "@/components/forms/multi-select-input";
 import type { FormQuestion } from "@/types/forms";
 import { cn } from "@/utils/utils";
-import MultiSelectInput from "@/components/forms/multi-select-input";
 
 export function FieldError({
   message,

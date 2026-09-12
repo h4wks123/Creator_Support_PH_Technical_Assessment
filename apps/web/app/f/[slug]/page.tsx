@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { getPublicForm, type PublicForm } from "@/lib/api/public-forms";
 import PublicFormFields from "@/components/forms/public-form-fields";
+import { getPublicForm, type PublicForm } from "@/lib/api/public-forms";
 
 export default async function PublicFormPage({
   params,

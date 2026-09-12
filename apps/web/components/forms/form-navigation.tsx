@@ -4,13 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/button";
+import toaster from "@/components/toaster";
 import {
   FORM_UPDATED_EVENT,
   getForm,
   updateForm,
   type CreatedForm,
 } from "@/lib/api/forms";
-import toaster from "@/components/toaster";
 import { cn } from "@/utils/utils";
 
 export default function FormNavigation({ formId }: { formId: string }) {

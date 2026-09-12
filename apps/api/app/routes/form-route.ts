@@ -3,8 +3,8 @@ import type { Response } from "express";
 import { pool } from "../config/psql-db.ts";
 import { verifyJWT } from "../middleware/auth-middleware.ts";
 import type { AuthenticatedUser } from "../types/auth-types.ts";
-import { createSlug, parseCreateForm, parseUpdateForm } from "../utils/util.ts";
 import { logger } from "../utils/logger.ts";
+import { createSlug, parseCreateForm, parseUpdateForm } from "../utils/util.ts";
 
 const formRoutes = Router();
 const FORM_ERROR_MESSAGE = "Unable to process form request";

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import { loadWebhookPage } from "./loader";
 import WebhookSettings from "@/components/forms/webhook-settings";
+import { loadWebhookPage } from "@/app/forms/[formId]/webhook/loader";
 
 export default async function WebhookPage({
   params,

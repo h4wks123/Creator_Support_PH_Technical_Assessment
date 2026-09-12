@@ -2,8 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
-import toaster from "@/components/toaster";
 import { Button } from "@/components/button";
+import toaster from "@/components/toaster";
 import { deleteForm } from "@/lib/api/forms";
 
 export default function DeleteFormButton({ formId }: { formId: string }) {

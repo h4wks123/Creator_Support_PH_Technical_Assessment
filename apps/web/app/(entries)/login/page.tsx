@@ -1,13 +1,13 @@
 "use client";
 
-import { Button } from "@/components/button";
-import toaster from "@/components/toaster";
-import { loginUser } from "@/lib/api/auth";
-import { saveAuthToken } from "@/lib/auth";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SubmitEvent, useState } from "react";
+import { Button } from "@/components/button";
+import toaster from "@/components/toaster";
+import { loginUser } from "@/lib/api/auth";
+import { saveAuthToken } from "@/lib/auth";
 
 export default function Login() {
   const router = useRouter();

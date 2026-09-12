@@ -1,16 +1,16 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useSyncExternalStore } from "react";
 import { Button } from "@/components/button";
 import {
   AUTH_CHANGE_EVENT,
   clearAuthToken,
   getLoggedInEmail,
 } from "@/lib/auth";
-import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
-import { useSyncExternalStore } from "react";
-import Link from "next/link";
-import toaster from "./toaster";
+import toaster from "@/components/toaster";
 
 export default function NavBar() {
   const router = useRouter();

@@ -1,6 +1,6 @@
+import { z } from "zod";
 import { publicFormRecordSchema } from "@/types/api";
 import { QUESTION_TYPES, formQuestionSchema } from "@/types/forms";
-import { z } from "zod";
 
 const getApiUrl = () =>
   typeof window === "undefined"

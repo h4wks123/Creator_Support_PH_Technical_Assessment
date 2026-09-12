@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { ToastContainer } from "react-toastify";
-import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import { Suspense } from "react";
+import { ToastContainer } from "react-toastify";
 import NavBar from "@/components/nav-bar";
 import NavigationErrorNotifier from "@/components/navigation-error-notifier";
+import "./globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

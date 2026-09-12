@@ -1,10 +1,10 @@
-import { Router } from "express";
-import { pool } from "../config/psql-db.ts";
 import bcrypt from "bcrypt";
+import "dotenv/config";
+import { Router } from "express";
+import jwt from "jsonwebtoken";
+import { pool } from "../config/psql-db.ts";
 import { logger } from "../utils/logger.ts";
 import { validateEmail, validatePassword } from "../utils/util.ts";
-import jwt from "jsonwebtoken";
-import "dotenv/config";
 
 const authRoutes = Router();
 const AUTH_ERROR_MESSAGE = "Unable to process authentication request";
