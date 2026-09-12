@@ -1,0 +1,11 @@
+{
+  "name": "webhook-consumer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Minimal in-memory webhook receiver for the Forms App",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  }
+}

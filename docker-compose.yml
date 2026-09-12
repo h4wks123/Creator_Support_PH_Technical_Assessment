@@ -57,6 +57,17 @@ services:
       - ./apps/web:/app
       - web_node_modules:/app/node_modules
 
+  webhook-consumer:
+    build:
+      context: ./apps/webhook-consumer
+      dockerfile: dockerfile
+    container_name: apps_webhook_consumer
+    ports:
+      - "4000:4000"
+    environment:
+      PORT: 4000
+      WEBHOOK_SECRET: ${WEBHOOK_SECRET:-development-secret}
+
 volumes:
   apps_db_data:
   api_node_modules:
