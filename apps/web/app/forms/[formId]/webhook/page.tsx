@@ -8,7 +8,9 @@ export default async function WebhookPage({
   params: Promise<{ formId: string }>;
 }) {
   const { formId } = await params;
-  const data = await loadWebhookPage(formId).catch(() => redirect("/"));
+  const data = await loadWebhookPage(formId).catch(() =>
+    redirect("/?error=webhook"),
+  );
 
   return (
     <main className="min-h-[calc(100dvh-140px)] bg-page px-5 py-8 text-secondary">
@@ -27,7 +29,7 @@ export default async function WebhookPage({
         <WebhookSettings
           formId={formId}
           formTitle={data.form.form_title}
-          hasWebhook={data.webhook !== null}
+          webhook={data.webhook}
           deliveries={data.deliveries}
         />
       </div>

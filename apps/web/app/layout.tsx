@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { ToastContainer } from "react-toastify";
+import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import NavBar from "@/components/nav-bar";
+import NavigationErrorNotifier from "@/components/navigation-error-notifier";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,6 +33,9 @@ export default function RootLayout({
         <NavBar />
         {children}
         <ToastContainer />
+        <Suspense fallback={null}>
+          <NavigationErrorNotifier />
+        </Suspense>
       </body>
     </html>
   );

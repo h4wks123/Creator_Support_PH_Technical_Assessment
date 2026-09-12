@@ -13,7 +13,7 @@ export default async function ResponsesPage({
   const { formId } = await params;
   const authToken = (await cookies()).get("auth_token")?.value;
   const responses = await getFormResponses(formId, authToken).catch(() =>
-    redirect("/"),
+    redirect("/?error=responses"),
   );
 
   return (

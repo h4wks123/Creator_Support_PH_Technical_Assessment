@@ -7,7 +7,9 @@ import DeleteFormButton from "@/components/forms/delete-form-button";
 
 export default async function HomePage() {
   const authToken = (await cookies()).get("auth_token")?.value;
-  const forms = await getForms(authToken).catch(() => redirect("/login"));
+  const forms = await getForms(authToken).catch(() =>
+    redirect("/login?error=load"),
+  );
 
   return (
     <main className="min-h-[calc(100dvh-57px)] bg-page text-secondary">

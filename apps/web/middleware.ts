@@ -34,7 +34,7 @@ export async function middleware(request: NextRequest) {
 
   if (!isAuthRoute && !isProtectedRoute) {
     return NextResponse.redirect(
-      new URL(isLoggedIn ? "/" : "/login", request.url),
+      new URL(isLoggedIn ? "/?error=load" : "/login?error=load", request.url),
     );
   }
 

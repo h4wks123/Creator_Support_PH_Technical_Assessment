@@ -2,6 +2,7 @@ import { Router } from "express";
 import { pool } from "../config/psql-db.ts";
 import { logger } from "../utils/logger.ts";
 import { parseSubmitResponse, validateSubmission } from "../utils/util.ts";
+import { deliverWebhook } from "../utils/webhook-delivery.ts";
 
 const publicFormRoutes = Router();
 const FORM_ERROR_MESSAGE = "Unable to process public form request";
@@ -162,6 +163,37 @@ publicFormRoutes.post("/:slug/responses", async (req, res) => {
       { formId: formResult.rows[0].form_id, responseId },
       "Response submitted",
     );
+
+    // The response has been committed before delivery starts. Delivery errors
+    // are logged independently and never affect the respondent's submission.
+    void deliverWebhook({
+      formId: formResult.rows[0].form_id,
+      formTitle: formResult.rows[0].form_title,
+      responseId,
+      email: input.email,
+      submittedAt: responseResult.rows[0].response_submitted_at,
+      answers: questions.map((question) => ({
+        questionId: question.question_id,
+        label: question.question_label,
+        type:
+          [
+            "short_text",
+            "long_text",
+            "date",
+            "dropdown",
+            "multi_select",
+            "multiple_choice",
+            "checkboxes",
+            "linear_scale",
+          ][question.question_type - 1] ?? "unknown",
+        value: answersById.get(question.question_id) ?? null,
+      })),
+    }).catch((err) => {
+      logger.error(
+        { error: err, formId: formResult.rows[0].form_id, responseId },
+        "Webhook delivery failed before it could be logged",
+      );
+    });
 
     return res.status(201).send();
   } catch (err) {

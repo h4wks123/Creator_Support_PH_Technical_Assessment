@@ -11,7 +11,7 @@ export default async function PublicFormPage({
   const { slug } = await params;
   const form: PublicForm = await getPublicForm(slug).catch(async () => {
     const isLoggedIn = Boolean((await cookies()).get("auth_token")?.value);
-    redirect(isLoggedIn ? "/" : "/login");
+    redirect(isLoggedIn ? "/?error=form" : "/login?error=form");
   });
 
   return (

@@ -77,8 +77,30 @@ CREATE TABLE IF NOT EXISTS answers (
     CONSTRAINT answers_response_question_unique UNIQUE (answer_response_id, answer_question_id)
 );
 
+CREATE TABLE IF NOT EXISTS webhooks (
+    webhook_id text NOT NULL PRIMARY KEY,
+    webhook_form_id text NOT NULL UNIQUE REFERENCES forms (form_id) ON DELETE CASCADE,
+    webhook_url text NOT NULL,
+    webhook_secret text NOT NULL,
+    webhook_created_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    webhook_updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT webhooks_url_not_blank CHECK (length(btrim(webhook_url)) > 0),
+    CONSTRAINT webhooks_secret_not_blank CHECK (length(btrim(webhook_secret)) > 0)
+);
+
+CREATE TABLE IF NOT EXISTS webhook_deliveries (
+    webhook_delivery_id text NOT NULL PRIMARY KEY,
+    webhook_delivery_form_id text NOT NULL REFERENCES forms (form_id) ON DELETE CASCADE,
+    webhook_delivery_response_id text NOT NULL REFERENCES responses (response_id) ON DELETE CASCADE,
+    webhook_delivery_attempted_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    webhook_delivery_status_code integer,
+    webhook_delivery_error_message text
+);
+
 CREATE INDEX IF NOT EXISTS forms_owner_id_idx ON forms (form_owner_id);
 CREATE INDEX IF NOT EXISTS responses_form_submitted_idx
     ON responses (response_form_id, response_submitted_at DESC);
 CREATE INDEX IF NOT EXISTS answers_response_order_idx
     ON answers (answer_response_id, answer_question_order);
+CREATE INDEX IF NOT EXISTS webhook_deliveries_form_attempted_idx
+    ON webhook_deliveries (webhook_delivery_form_id, webhook_delivery_attempted_at DESC);

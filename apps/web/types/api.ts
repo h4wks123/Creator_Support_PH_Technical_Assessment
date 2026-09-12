@@ -100,3 +100,28 @@ export const questionIdResponseSchema = z.object({ questionId: z.string() });
 
 export const formResponsePayloadSchema = z.object({ response: responseRecordSchema });
 export const formResponsesPayloadSchema = z.object({ responses: z.array(responseRecordSchema) });
+
+export const webhookRecordSchema = z.object({
+  webhook_id: z.string(),
+  webhook_form_id: z.string(),
+  webhook_url: z.string(),
+  webhook_created_at: z.string(),
+  webhook_updated_at: z.string(),
+  webhook_has_secret: z.boolean(),
+});
+export type WebhookRecord = z.infer<typeof webhookRecordSchema>;
+export const webhookPayloadSchema = z.object({
+  webhook: webhookRecordSchema.nullable(),
+});
+export const webhookDeliverySchema = z.object({
+  webhook_delivery_id: z.string(),
+  webhook_delivery_form_id: z.string(),
+  webhook_delivery_response_id: z.string(),
+  webhook_delivery_attempted_at: z.string(),
+  webhook_delivery_status_code: z.number().int().nullable(),
+  webhook_delivery_error_message: z.string().nullable(),
+});
+export type WebhookDeliveryRecord = z.infer<typeof webhookDeliverySchema>;
+export const webhookDeliveriesPayloadSchema = z.object({
+  deliveries: z.array(webhookDeliverySchema),
+});

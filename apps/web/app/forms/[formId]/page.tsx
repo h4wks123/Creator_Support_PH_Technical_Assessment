@@ -16,14 +16,14 @@ export default async function FormPage({
     const form = await createForm(
       { title: "Untitled form", description: "", isPublished: false },
       authToken,
-    ).catch(() => redirect("/"));
+    ).catch(() => redirect("/?error=form"));
     redirect(`/forms/${form.form_id}`);
   }
 
   const [form, questions] = await Promise.all([
     getForm(formId, authToken),
     getQuestions(formId, authToken),
-  ]).catch(() => redirect("/"));
+  ]).catch(() => redirect("/?error=form"));
 
   return (
     <main
