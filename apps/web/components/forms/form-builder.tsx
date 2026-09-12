@@ -10,7 +10,7 @@ import {
   QuestionType,
 } from "@/types/forms";
 import { useEffect, useRef, useState } from "react";
-import { updateForm } from "@/lib/api/forms";
+import { FORM_UPDATED_EVENT, updateForm } from "@/lib/api/forms";
 import {
   createQuestion,
   deleteQuestion,
@@ -54,11 +54,14 @@ export default function FormBuilder({
   const saveForm = async (nextDraft: FormDraft) => {
     setIsSaving(true);
     try {
-      await updateForm(formId, {
+      const updatedForm = await updateForm(formId, {
         title: nextDraft.title,
         description: nextDraft.description,
         isPublished: nextDraft.published,
       });
+      window.dispatchEvent(
+        new CustomEvent(FORM_UPDATED_EVENT, { detail: updatedForm }),
+      );
     } catch (error) {
       setFormErrors({
         server: error instanceof Error ? error.message : "Unable to save form",

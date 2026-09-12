@@ -4,7 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/button";
-import { getForm, updateForm, type CreatedForm } from "@/lib/api/forms";
+import {
+  FORM_UPDATED_EVENT,
+  getForm,
+  updateForm,
+  type CreatedForm,
+} from "@/lib/api/forms";
 import toaster from "@/components/toaster";
 import { cn } from "@/utils/utils";
 
@@ -15,6 +20,12 @@ export default function FormNavigation({ formId }: { formId: string }) {
 
   useEffect(() => {
     let active = true;
+    const handleFormUpdated = (event: Event) => {
+      const updatedForm = (event as CustomEvent<CreatedForm>).detail;
+      if (updatedForm?.form_id === formId) setForm(updatedForm);
+    };
+
+    window.addEventListener(FORM_UPDATED_EVENT, handleFormUpdated);
     void getForm(formId)
       .then((loadedForm) => {
         if (active) setForm(loadedForm);
@@ -25,6 +36,7 @@ export default function FormNavigation({ formId }: { formId: string }) {
 
     return () => {
       active = false;
+      window.removeEventListener(FORM_UPDATED_EVENT, handleFormUpdated);
     };
   }, [formId]);
 

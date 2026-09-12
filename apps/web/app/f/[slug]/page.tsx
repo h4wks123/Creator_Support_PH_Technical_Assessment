@@ -15,11 +15,13 @@ export default async function PublicFormPage({
   });
 
   return (
-    <main className="min-h-100dvh bg-page py-10 text-secondary">
+    <main className="min-h-dvh bg-page py-10 text-secondary">
       <header className="mx-auto mb-4 max-w-3xl rounded-xl border-t-4 border-primary bg-white p-7 shadow-sm">
-        <h1 className="font-[Poppins] text-3xl font-semibold">{form.title}</h1>
+        <h1 className="font-[Poppins] text-3xl font-semibold break-all">
+          {form.title}
+        </h1>
         {form.description ? (
-          <p className="mt-3 whitespace-pre-wrap text-sm text-slate-500">
+          <p className="mt-3 whitespace-pre-wrap text-sm text-slate-500 break-all">
             {form.description}
           </p>
         ) : null}

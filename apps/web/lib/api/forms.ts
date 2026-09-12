@@ -13,6 +13,7 @@ const getApiUrl = () =>
     : process.env.NEXT_PUBLIC_APP_API_URL;
 
 export type CreatedForm = FormRecord;
+export const FORM_UPDATED_EVENT = "form-updated";
 
 const formPayloadSchema = z.object({ form: formRecordSchema });
 const formsPayloadSchema = z.object({ forms: z.array(formListRecordSchema) });
