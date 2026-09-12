@@ -2,7 +2,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getFormResponses } from "@/lib/api/responses";
-import { formatDate } from "@/utils/utils";
+import LocalDate from "@/components/local-date";
 
 export default async function ResponsesPage({
   params,
@@ -48,7 +48,7 @@ export default async function ResponsesPage({
                     {response.response_respondent_email}
                   </p>
                   <p className="mt-1 text-xs text-slate-500">
-                    Submitted {formatDate(response.response_submitted_at)}
+                    Submitted <LocalDate value={response.response_submitted_at} />
                   </p>
                 </div>
                 <Link
