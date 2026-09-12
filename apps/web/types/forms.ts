@@ -40,7 +40,6 @@ export const formDraftSchema = z.object({
   title: z.string(),
   description: z.string(),
   questions: z.array(formQuestionSchema),
-  published: z.boolean(),
 });
 export type FormDraft = z.infer<typeof formDraftSchema>;
 

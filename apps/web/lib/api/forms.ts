@@ -26,7 +26,11 @@ const createFormInputSchema = z.object({
 });
 export type CreateFormInput = z.infer<typeof createFormInputSchema>;
 
-export type UpdateFormInput = CreateFormInput;
+const updateFormInputSchema = createFormInputSchema.omit({ isPublished: true });
+const updateFormStatusInputSchema = createFormInputSchema.pick({
+  isPublished: true,
+});
+export type UpdateFormInput = z.infer<typeof updateFormInputSchema>;
 
 export async function getForms(authToken?: string): Promise<FormListRecord[]> {
   const token = authToken ?? getAuthToken();
@@ -73,11 +77,32 @@ export async function createForm(
   return formPayloadSchema.parse(await response.json()).form;
 }
 
+export async function updateFormStatus(
+  formId: string,
+  isPublished: boolean,
+): Promise<CreatedForm> {
+  const input = updateFormStatusInputSchema.parse({ isPublished });
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_APP_API_URL}/api/forms/${formId}/status`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${getAuthToken()}`,
+      },
+      body: JSON.stringify(input),
+    },
+  );
+
+  if (!response.ok) throw new Error("Unable to update form status");
+  return formPayloadSchema.parse(await response.json()).form;
+}
+
 export async function updateForm(
   formId: string,
   input: UpdateFormInput,
 ): Promise<CreatedForm> {
-  createFormInputSchema.parse(input);
+  const metadata = updateFormInputSchema.parse(input);
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_APP_API_URL}/api/forms/${formId}`,
     {
@@ -86,7 +111,7 @@ export async function updateForm(
         "Content-Type": "application/json",
         Authorization: `Bearer ${getAuthToken()}`,
       },
-      body: JSON.stringify(input),
+      body: JSON.stringify(metadata),
     },
   );
 

@@ -1,5 +1,9 @@
 import { z } from "zod";
-import type { CreateFormInput } from "../types/form-types.ts";
+import type {
+  CreateFormInput,
+  UpdateFormInput,
+  UpdateFormStatusInput,
+} from "../types/form-types.ts";
 import {
   QUESTION_TYPE_MAX,
   QUESTION_TYPE_MIN,
@@ -45,8 +49,11 @@ const formSchema = z.object({
   description: z.string().trim().max(5000).nullable().default(null),
   isPublished: z.boolean().default(false),
 });
-const updateFormSchema = formSchema.extend({
-  title: z.string().trim().min(1),
+const updateFormSchema = z.object({
+  title: z.string().trim().min(1).max(255),
+  description: z.string().trim().max(5000).nullable(),
+});
+const updateFormStatusSchema = z.object({
   isPublished: z.boolean(),
 });
 const questionSchema = z.object({
@@ -82,8 +89,15 @@ export const parseCreateForm = (body: unknown): CreateFormInput | null => {
   return result.success ? result.data : null;
 };
 
-export const parseUpdateForm = (body: unknown): CreateFormInput | null => {
+export const parseUpdateForm = (body: unknown): UpdateFormInput | null => {
   const result = updateFormSchema.safeParse(body);
+  return result.success ? result.data : null;
+};
+
+export const parseUpdateFormStatus = (
+  body: unknown,
+): UpdateFormStatusInput | null => {
+  const result = updateFormStatusSchema.safeParse(body);
   return result.success ? result.data : null;
 };
 

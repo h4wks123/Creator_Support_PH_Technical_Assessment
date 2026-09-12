@@ -37,7 +37,6 @@ export default async function FormPage({
             formSlug: form.form_slug,
             title: form.form_title,
             description: form.form_description ?? "",
-            published: form.form_is_published,
             questions,
           }}
         />

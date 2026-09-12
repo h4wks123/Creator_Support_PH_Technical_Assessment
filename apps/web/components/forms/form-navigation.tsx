@@ -8,7 +8,7 @@ import toaster from "@/components/toaster";
 import {
   FORM_UPDATED_EVENT,
   getForm,
-  updateForm,
+  updateFormStatus,
   type CreatedForm,
 } from "@/lib/api/forms";
 import { cn } from "@/utils/utils";
@@ -22,7 +22,18 @@ export default function FormNavigation({ formId }: { formId: string }) {
     let active = true;
     const handleFormUpdated = (event: Event) => {
       const updatedForm = (event as CustomEvent<CreatedForm>).detail;
-      if (updatedForm?.form_id === formId) setForm(updatedForm);
+      if (updatedForm?.form_id === formId) {
+        setForm((current) =>
+          current
+            ? {
+                ...current,
+                form_title: updatedForm.form_title,
+                form_description: updatedForm.form_description,
+                form_updated_at: updatedForm.form_updated_at,
+              }
+            : current,
+        );
+      }
     };
 
     window.addEventListener(FORM_UPDATED_EVENT, handleFormUpdated);
@@ -44,11 +55,10 @@ export default function FormNavigation({ formId }: { formId: string }) {
     if (!form) return;
     setIsSaving(true);
     try {
-      const updatedForm = await updateForm(formId, {
-        title: form.form_title,
-        description: form.form_description ?? "",
-        isPublished: !form.form_is_published,
-      });
+      const updatedForm = await updateFormStatus(
+        formId,
+        !form.form_is_published,
+      );
       setForm(updatedForm);
     } catch (error) {
       toaster(

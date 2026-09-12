@@ -10,6 +10,15 @@ export interface CreateFormInput {
   isPublished: boolean;
 }
 
+export interface UpdateFormInput {
+  title: string;
+  description: string | null;
+}
+
+export interface UpdateFormStatusInput {
+  isPublished: boolean;
+}
+
 export interface FormRecord {
   form_id: string;
   form_owner_id: string;

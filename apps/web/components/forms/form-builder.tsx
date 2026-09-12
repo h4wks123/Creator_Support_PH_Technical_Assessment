@@ -57,7 +57,6 @@ export default function FormBuilder({
       const updatedForm = await updateForm(formId, {
         title: nextDraft.title,
         description: nextDraft.description,
-        isPublished: nextDraft.published,
       });
       window.dispatchEvent(
         new CustomEvent(FORM_UPDATED_EVENT, { detail: updatedForm }),
