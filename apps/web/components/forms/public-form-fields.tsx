@@ -13,7 +13,13 @@ import { Button } from "@/components/button";
 type AnswerValue = string | string[] | number;
 
 export default function PublicFormFields({ form }: { form: PublicForm }) {
-  const [answers, setAnswers] = useState<Record<string, AnswerValue>>({});
+  const [answers, setAnswers] = useState<Record<string, AnswerValue>>(() =>
+    Object.fromEntries(
+      form.questions
+        .filter((question) => question.type === "linear_scale")
+        .map((question) => [question.id, question.linearScale?.min ?? 1]),
+    ),
+  );
   const [email, setEmail] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -39,7 +45,11 @@ export default function PublicFormFields({ form }: { form: PublicForm }) {
         email.trim(),
         form.questions.map((question) => ({
           questionId: question.id,
-          value: answers[question.id] ?? null,
+          value:
+            answers[question.id] ??
+            (question.type === "linear_scale"
+              ? (question.linearScale?.min ?? 1)
+              : null),
         })),
       );
       setSubmitted(true);
