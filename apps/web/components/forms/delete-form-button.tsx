@@ -15,6 +15,7 @@ export default function DeleteFormButton({ formId }: { formId: string }) {
     startTransition(async () => {
       try {
         await deleteForm(formId);
+        toaster(200, "Form deleted.");
         setIsOpen(false);
         router.refresh();
       } catch {
