@@ -8,17 +8,17 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #f7f8fa;
+  background: var(--color-page);
 }
 
 ::-webkit-scrollbar-thumb {
-  border: 2px solid #f7f8fa;
+  border: 2px solid var(--color-page);
   border-radius: 999px;
-  background: #7a2a72;
+  background: var(--color-primary);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #61215a;
+  background: var(--color-primary-dark);
 }
 
 button:not(:disabled),
@@ -27,8 +27,10 @@ a {
 }
 
 @theme {
+  --color-page: #f7f8fa;
   --color-background: #e5e7eb;
   --color-primary: #7a2a72;
+  --color-primary-dark: #61215a;
   --color-secondary: #2e333b;
   --color-foreground: #f6f7f9;
   --color-post: #49cc90;

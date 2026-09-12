@@ -16,7 +16,7 @@ export default async function ResponsesPage({
   );
 
   return (
-    <main className="min-h-[calc(100dvh-140px)] bg-[#f7f8fa] px-5 py-8 text-secondary">
+    <main className="min-h-[calc(100dvh-140px)] bg-page px-5 py-8 text-secondary">
       <header className="max-w-360 px-5 mb-8 mx-auto flex flex-wrap items-end gap-3">
         <h1 className="mt-1 font-[Poppins] text-3xl font-semibold text-primary">
           Form responses

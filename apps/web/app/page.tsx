@@ -10,7 +10,7 @@ export default async function HomePage() {
   const forms = await getForms(authToken).catch(() => redirect("/login"));
 
   return (
-    <main className="min-h-[calc(100dvh-57px)] bg-[#f7f8fa] text-secondary">
+    <main className="min-h-[calc(100dvh-57px)] bg-page text-secondary">
       <div className="mx-auto w-full max-w-360 px-5 py-10">
         <div className="flex items-center justify-between border-b border-slate-200 pb-5">
           <h1 className="font-[Poppins] text-3xl font-semibold tracking-tight sm:text-4xl">

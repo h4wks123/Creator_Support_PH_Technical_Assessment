@@ -28,7 +28,7 @@ export default async function FormPage({
   return (
     <main
       data-form-id={formId}
-      className="min-h-[calc(100dvh-57px)] bg-[#f7f8fa] text-secondary"
+      className="min-h-[calc(100dvh-57px)] bg-page text-secondary"
     >
       <div className="mx-auto w-full max-w-360 px-5 py-8">
         <FormBuilder

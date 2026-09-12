@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/button";
 import { getForm, updateForm, type CreatedForm } from "@/lib/api/forms";
 import toaster from "@/components/toaster";
+import { cn } from "@/utils/utils";
 
 export default function FormNavigation({ formId }: { formId: string }) {
   const pathname = usePathname();
@@ -50,9 +51,12 @@ export default function FormNavigation({ formId }: { formId: string }) {
   const isBuildRoute = pathname === `/forms/${formId}`;
   const isResponsesRoute = pathname.startsWith(`/forms/${formId}/responses`);
   const tabClass = (active: boolean) =>
-    active
-      ? "border-b-2 border-primary pb-3 pt-1"
-      : "pb-3 pt-1 text-slate-400 hover:text-primary";
+    cn(
+      "pb-3 pt-1",
+      active
+        ? "border-b-2 border-primary"
+        : "text-slate-400 hover:text-primary",
+    );
 
   return (
     <div className="border-b border-slate-200 bg-white">
