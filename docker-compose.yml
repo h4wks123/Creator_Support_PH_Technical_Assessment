@@ -17,6 +17,32 @@ services:
       timeout: 5s
       retries: 10
 
+  seed:
+    image: postgres:17
+    profiles: ["seed"]
+    environment:
+      PGPASSWORD: ${DB_PASS}
+    volumes:
+      - ./apps/api/db/seed.sql:/seed.sql:ro
+    command:
+      - psql
+      - -h
+      - db
+      - -U
+      - ${DB_USER}
+      - -d
+      - ${DB_NAME}
+      - -v
+      - ON_ERROR_STOP=1
+      - -v
+      - seed_webhook_secret=${WEBHOOK_SECRET:-development-secret}
+      - -f
+      - /seed.sql
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
   api:
     build:
       context: ./apps/api

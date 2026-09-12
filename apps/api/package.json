@@ -8,6 +8,7 @@
     "start": "tsx app/server.ts",
     "dev": "tsx watch app/server.ts",
     "db:schema": "PGPASSWORD=${DB_PASS:-$DB_PASSWORD} psql -h ${DB_HOST:-localhost} -p ${DB_PORT:-5432} -U ${DB_USER} -d ${DB_NAME} -v ON_ERROR_STOP=1 -f db/schema.sql",
+    "db:seed": "PGPASSWORD=${DB_PASS:-$DB_PASSWORD} psql -h ${DB_HOST:-localhost} -p ${DB_PORT:-5432} -U ${DB_USER} -d ${DB_NAME} -v ON_ERROR_STOP=1 -v seed_webhook_secret=${WEBHOOK_SECRET:-development-secret} -f db/seed.sql",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
