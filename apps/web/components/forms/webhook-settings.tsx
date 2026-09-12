@@ -65,10 +65,6 @@ export default function WebhookSettings({
     setIsToggling(true);
     try {
       await toggleWebhook(formId, enabled);
-      toaster(
-        200,
-        enabled ? "Webhook deliveries enabled" : "Webhook deliveries disabled",
-      );
     } catch (error) {
       setIsEnabled(previous);
       toaster(
