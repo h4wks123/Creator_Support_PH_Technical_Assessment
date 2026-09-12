@@ -178,7 +178,6 @@ export default function FormBuilder({
           className="w-full bg-transparent font-[Poppins] text-2xl font-semibold outline-none"
           value={draft.title}
           onChange={(event) => updateDraft({ title: event.target.value })}
-          disabled={isSaving}
         />
         {formErrors.title ? (
           <p className="mt-1 text-xs text-delete">{formErrors.title}</p>
@@ -189,7 +188,6 @@ export default function FormBuilder({
           value={draft.description}
           onChange={(event) => updateDraft({ description: event.target.value })}
           placeholder="Description (optional)"
-          disabled={isSaving}
         />
         {formErrors.description ? (
           <p className="mt-1 text-xs text-delete">{formErrors.description}</p>

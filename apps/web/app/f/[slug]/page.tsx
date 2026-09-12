@@ -15,7 +15,7 @@ export default async function PublicFormPage({
   });
 
   return (
-    <main className="min-h-[calc(100dvh-57px)] bg-page py-10 text-secondary">
+    <main className="min-h-100dvh bg-page py-10 text-secondary">
       <header className="mx-auto mb-4 max-w-3xl rounded-xl border-t-4 border-primary bg-white p-7 shadow-sm">
         <h1 className="font-[Poppins] text-3xl font-semibold">{form.title}</h1>
         {form.description ? (
