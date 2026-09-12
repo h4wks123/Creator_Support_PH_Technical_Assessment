@@ -62,6 +62,7 @@ export default function FormNavigation({ formId }: { formId: string }) {
 
   const isBuildRoute = pathname === `/forms/${formId}`;
   const isResponsesRoute = pathname.startsWith(`/forms/${formId}/responses`);
+  const isWebhookRoute = pathname.startsWith(`/forms/${formId}/webhook`);
   const tabClass = (active: boolean) =>
     cn(
       "pb-3 pt-1",
@@ -114,15 +115,12 @@ export default function FormNavigation({ formId }: { formId: string }) {
           >
             Responses
           </Link>
-          <Button
-            type="button"
-            variant="ghost"
-            size="ghost"
-            interaction="ghost"
-            className="pb-3 pt-1 text-slate-400"
+          <Link
+            href={`/forms/${formId}/webhook`}
+            className={tabClass(isWebhookRoute)}
           >
             Webhook
-          </Button>
+          </Link>
         </div>
       </div>
     </div>

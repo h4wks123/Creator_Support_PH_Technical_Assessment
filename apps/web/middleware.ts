@@ -11,9 +11,8 @@ export async function middleware(request: NextRequest) {
   const pathname = normalizePathname(request.nextUrl.pathname);
   const isAuthRoute = AUTH_ROUTES.includes(pathname);
   const isFormRoute =
-    /^\/forms\/[^/]+(?:\/responses(?:\/[^/]+)?)?$/.test(pathname);
-  const isProtectedRoute =
-    pathname === "/" || isFormRoute;
+    /^\/forms\/[^/]+(?:\/responses(?:\/[^/]+)?|\/webhook)?$/.test(pathname);
+  const isProtectedRoute = pathname === "/" || isFormRoute;
   const isPublicFormRoute = /^\/f\/[^/]+$/.test(pathname);
 
   if (pathname.includes(".")) return NextResponse.next();
