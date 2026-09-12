@@ -7,6 +7,7 @@ import {
   QUESTION_TYPE_LABELS,
   QuestionType,
 } from "@/types/forms";
+import type { QuestionValidationErrors } from "@/utils/utils";
 
 const fieldClassName =
   "w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-secondary outline-none focus:border-primary";
@@ -24,6 +25,7 @@ interface Props {
   onChange: (question: FormQuestion) => void;
   onDelete: () => void;
   onMove: (direction: -1 | 1) => void;
+  errors?: QuestionValidationErrors;
 }
 
 export default function QuestionCard({
@@ -33,6 +35,7 @@ export default function QuestionCard({
   onChange,
   onDelete,
   onMove,
+  errors,
 }: Props) {
   const update = (changes: Partial<FormQuestion>) =>
     onChange({ ...question, ...changes });
@@ -78,47 +81,61 @@ export default function QuestionCard({
             </select>
           </div>
 
+          {errors?.label ? (
+            <p className="mt-1 text-xs text-delete">{errors.label}</p>
+          ) : null}
+
           {optionTypes.includes(question.type) && (
             <div className="mt-4 max-w-80">
               <p className="mb-2 text-[10px] font-mono uppercase tracking-[0.18em] text-slate-400">
                 Options
               </p>
               {question.options.map((option, optionIndex) => (
-                <div className="mb-2 flex items-center gap-2" key={optionIndex}>
-                  <input
-                    className={fieldClassName}
-                    value={option}
-                    onChange={(event) =>
-                      update({
-                        options: question.options.map(
-                          (current, currentIndex) =>
-                            currentIndex === optionIndex
-                              ? event.target.value
-                              : current,
-                        ),
-                      })
-                    }
-                  />
-                  <Button
-                    type="button"
-                    aria-label={`Remove option ${optionIndex + 1}`}
-                    disabled={question.options.length <= 1}
-                    variant="ghost"
-                    size="ghost"
-                    interaction="ghost"
-                    className="px-1 text-slate-400 hover:text-delete"
-                    onClick={() =>
-                      update({
-                        options: question.options.filter(
-                          (_, currentIndex) => currentIndex !== optionIndex,
-                        ),
-                      })
-                    }
-                  >
-                    ×
-                  </Button>
+                <div className="mb-2" key={optionIndex}>
+                  <div className="flex items-center gap-2">
+                    <input
+                      className={fieldClassName}
+                      value={option}
+                      onChange={(event) =>
+                        update({
+                          options: question.options.map(
+                            (current, currentIndex) =>
+                              currentIndex === optionIndex
+                                ? event.target.value
+                                : current,
+                          ),
+                        })
+                      }
+                    />
+                    <Button
+                      type="button"
+                      aria-label={`Remove option ${optionIndex + 1}`}
+                      disabled={question.options.length <= 1}
+                      variant="ghost"
+                      size="ghost"
+                      interaction="ghost"
+                      className="px-1 text-slate-400 hover:text-delete"
+                      onClick={() =>
+                        update({
+                          options: question.options.filter(
+                            (_, currentIndex) => currentIndex !== optionIndex,
+                          ),
+                        })
+                      }
+                    >
+                      ×
+                    </Button>
+                  </div>
+                  {errors?.optionErrors?.[optionIndex] ? (
+                    <p className="mt-1 text-xs text-delete">
+                      {errors.optionErrors[optionIndex]}
+                    </p>
+                  ) : null}
                 </div>
               ))}
+              {errors?.options ? (
+                <p className="text-xs text-delete">{errors.options}</p>
+              ) : null}
               <Button
                 type="button"
                 variant="ghost"
@@ -141,52 +158,67 @@ export default function QuestionCard({
           )}
 
           {question.type === "linear_scale" && (
-            <div className="mt-4 grid max-w-2xl gap-2 sm:grid-cols-4">
-              <input
-                aria-label="Minimum scale"
-                className={fieldClassName}
-                type="number"
-                value={scale.min}
-                onChange={(event) =>
-                  update({
-                    linearScale: { ...scale, min: Number(event.target.value) },
-                  })
-                }
-              />
-              <input
-                aria-label="Maximum scale"
-                className={fieldClassName}
-                type="number"
-                value={scale.max}
-                onChange={(event) =>
-                  update({
-                    linearScale: { ...scale, max: Number(event.target.value) },
-                  })
-                }
-              />
-              <input
-                aria-label="Minimum label"
-                className={fieldClassName}
-                placeholder="Min label"
-                value={scale.minLabel}
-                onChange={(event) =>
-                  update({
-                    linearScale: { ...scale, minLabel: event.target.value },
-                  })
-                }
-              />
-              <input
-                aria-label="Maximum label"
-                className={fieldClassName}
-                placeholder="Max label"
-                value={scale.maxLabel}
-                onChange={(event) =>
-                  update({
-                    linearScale: { ...scale, maxLabel: event.target.value },
-                  })
-                }
-              />
-            </div>
+            <>
+              <div className="mt-4 grid max-w-2xl gap-2 sm:grid-cols-4">
+                <input
+                  aria-label="Minimum scale"
+                  className={fieldClassName}
+                  type="number"
+                  value={scale.min}
+                  onChange={(event) =>
+                    update({
+                      linearScale: {
+                        ...scale,
+                        min: Number(event.target.value),
+                      },
+                    })
+                  }
+                />
+                <input
+                  aria-label="Maximum scale"
+                  className={fieldClassName}
+                  type="number"
+                  value={scale.max}
+                  onChange={(event) =>
+                    update({
+                      linearScale: {
+                        ...scale,
+                        max: Number(event.target.value),
+                      },
+                    })
+                  }
+                />
+                <input
+                  aria-label="Minimum label"
+                  className={fieldClassName}
+                  placeholder="Min label"
+                  value={scale.minLabel}
+                  onChange={(event) =>
+                    update({
+                      linearScale: { ...scale, minLabel: event.target.value },
+                    })
+                  }
+                />
+                <input
+                  aria-label="Maximum label"
+                  className={fieldClassName}
+                  placeholder="Max label"
+                  value={scale.maxLabel}
+                  onChange={(event) =>
+                    update({
+                      linearScale: { ...scale, maxLabel: event.target.value },
+                    })
+                  }
+                />
+              </div>
+              {errors?.linearScale ? (
+                <div className="mt-1 space-y-1 text-xs text-delete">
+                  {Object.values(errors.linearScale).map((error) => (
+                    <p key={error}>{error}</p>
+                  ))}
+                </div>
+              ) : null}
+            </>
           )}
 
           <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-3">
@@ -235,6 +267,9 @@ export default function QuestionCard({
               </Button>
             </div>
           </div>
+          {errors?.server ? (
+            <p className="mt-2 text-xs text-delete">{errors.server}</p>
+          ) : null}
         </div>
       </div>
     </article>

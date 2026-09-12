@@ -19,8 +19,8 @@ const formsPayloadSchema = z.object({ forms: z.array(formListRecordSchema) });
 const deleteFormResponseSchema = z.object({ formId: z.string() });
 
 const createFormInputSchema = z.object({
-  title: z.string(),
-  description: z.string(),
+  title: z.string().trim().min(1).max(255),
+  description: z.string().max(5000),
   isPublished: z.boolean(),
 });
 export type CreateFormInput = z.infer<typeof createFormInputSchema>;

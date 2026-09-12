@@ -18,6 +18,10 @@ CREATE TABLE IF NOT EXISTS forms (
     form_created_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     form_updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT forms_title_not_blank CHECK (length(btrim(form_title)) > 0),
+    CONSTRAINT forms_title_max_length CHECK (length(form_title) <= 255),
+    CONSTRAINT forms_description_max_length CHECK (
+        form_description IS NULL OR length(form_description) <= 5000
+    ),
     CONSTRAINT forms_published_at_consistent CHECK (
         (form_is_published AND form_published_at IS NOT NULL)
         OR (NOT form_is_published AND form_published_at IS NULL)
@@ -39,6 +43,7 @@ CREATE TABLE IF NOT EXISTS questions (
     question_created_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     question_updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT questions_label_not_blank CHECK (length(btrim(question_label)) > 0),
+    CONSTRAINT questions_label_max_length CHECK (length(question_label) <= 255),
     CONSTRAINT questions_order_positive CHECK (question_order > 0),
     CONSTRAINT questions_type_supported CHECK (question_type BETWEEN 1 AND 8),
     CONSTRAINT questions_config_object CHECK (jsonb_typeof(question_config) = 'object')

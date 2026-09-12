@@ -20,6 +20,12 @@ import {
 } from "@/lib/api/questions";
 import toaster from "@/components/toaster";
 import { Button } from "@/components/button";
+import {
+  type FormValidationErrors,
+  type QuestionValidationErrors,
+  validateForm,
+  validateQuestion,
+} from "@/utils/utils";
 
 const FORM_SAVE_DEBOUNCE_MS = 500;
 
@@ -32,6 +38,10 @@ export default function FormBuilder({
 }) {
   const [draft, setDraft] = useState<FormDraft>(initialDraft);
   const [isSaving, setIsSaving] = useState(false);
+  const [formErrors, setFormErrors] = useState<FormValidationErrors>({});
+  const [questionErrors, setQuestionErrors] = useState<
+    Record<string, QuestionValidationErrors>
+  >({});
   const saveFormTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(
@@ -50,18 +60,20 @@ export default function FormBuilder({
         isPublished: nextDraft.published,
       });
     } catch (error) {
-      toaster(
-        500,
-        error instanceof Error ? error.message : "Unable to save form",
-      );
+      setFormErrors({
+        server: error instanceof Error ? error.message : "Unable to save form",
+      });
     }
     setIsSaving(false);
   };
 
   const updateDraft = (changes: Partial<FormDraft>) => {
     const nextDraft = { ...draft, ...changes };
+    const errors = validateForm(nextDraft.title, nextDraft.description);
     setDraft(nextDraft);
+    setFormErrors(errors);
     if (saveFormTimeout.current) clearTimeout(saveFormTimeout.current);
+    if (Object.keys(errors).length) return;
     saveFormTimeout.current = setTimeout(() => {
       saveFormTimeout.current = null;
       void saveForm(nextDraft);
@@ -127,13 +139,23 @@ export default function FormBuilder({
   };
 
   const updateDraftQuestion = (question: FormQuestion) => {
+    const errors = validateQuestion(question);
+    setQuestionErrors((current) => ({ ...current, [question.id]: errors }));
     updateQuestions(
       draft.questions.map((current) =>
         current.id === question.id ? question : current,
       ),
     );
-    void updateQuestion(formId, question).catch(() =>
-      toaster(500, "Unable to save question"),
+    if (Object.keys(errors).length) return;
+    void updateQuestion(formId, question).catch((error) =>
+      setQuestionErrors((current) => ({
+        ...current,
+        [question.id]: {
+          ...current[question.id],
+          server:
+            error instanceof Error ? error.message : "Unable to save question",
+        },
+      })),
     );
   };
 
@@ -158,6 +180,9 @@ export default function FormBuilder({
           onChange={(event) => updateDraft({ title: event.target.value })}
           disabled={isSaving}
         />
+        {formErrors.title ? (
+          <p className="mt-1 text-xs text-delete">{formErrors.title}</p>
+        ) : null}
         <textarea
           aria-label="Form description"
           className="mt-4 min-h-12 w-full resize-y bg-transparent text-sm text-slate-500 outline-none"
@@ -166,6 +191,12 @@ export default function FormBuilder({
           placeholder="Description (optional)"
           disabled={isSaving}
         />
+        {formErrors.description ? (
+          <p className="mt-1 text-xs text-delete">{formErrors.description}</p>
+        ) : null}
+        {formErrors.server ? (
+          <p className="mt-2 text-xs text-delete">{formErrors.server}</p>
+        ) : null}
       </section>
       <section className="pt-3">
         <p className="mb-4 text-xs text-slate-500">
@@ -179,6 +210,7 @@ export default function FormBuilder({
               index={index}
               total={draft.questions.length}
               onChange={updateDraftQuestion}
+              errors={questionErrors[question.id]}
               onDelete={() => void removeQuestion(question)}
               onMove={(direction) => moveQuestion(index, direction)}
             />

@@ -41,8 +41,8 @@ export const validatePassword = (password: string) =>
 
 const recordSchema = z.record(z.string(), z.unknown());
 const formSchema = z.object({
-  title: z.string().trim().min(1).default("Untitled form"),
-  description: z.string().trim().nullable().default(null),
+  title: z.string().trim().min(1).max(255).default("Untitled form"),
+  description: z.string().trim().max(5000).nullable().default(null),
   isPublished: z.boolean().default(false),
 });
 const updateFormSchema = formSchema.extend({
@@ -50,12 +50,28 @@ const updateFormSchema = formSchema.extend({
   isPublished: z.boolean(),
 });
 const questionSchema = z.object({
-  label: z.string().trim().min(1),
+  label: z.string().trim().min(1).max(255),
   type: z.number().int().min(QUESTION_TYPE_MIN).max(QUESTION_TYPE_MAX),
   order: z.number().int().positive().optional(),
   required: z.boolean().default(false),
   config: recordSchema.default({}),
 });
+const questionOptionsSchema = z
+  .object({
+    options: z
+      .array(z.string().trim().min(1).max(255))
+      .min(1)
+      .refine((options) => new Set(options).size === options.length),
+  })
+  .passthrough();
+const linearScaleConfigSchema = z
+  .object({
+    min: z.number().int(),
+    max: z.number().int(),
+    minLabel: z.string().trim().min(1).max(255),
+    maxLabel: z.string().trim().min(1).max(255),
+  })
+  .refine(({ min, max }) => min <= max);
 const responseSchema = z.object({
   email: emailSchema,
   answers: z.array(z.object({ questionId: z.string(), value: z.unknown() })),
@@ -75,7 +91,21 @@ export const parseCreateQuestion = (
   body: unknown,
 ): CreateQuestionInput | null => {
   const result = questionSchema.safeParse(body);
-  return result.success ? result.data : null;
+  if (!result.success) return null;
+
+  if ([4, 5, 6, 7].includes(result.data.type)) {
+    const options = questionOptionsSchema.safeParse(result.data.config);
+    return options.success ? { ...result.data, config: options.data } : null;
+  }
+
+  if (result.data.type === 8) {
+    const linearScale = linearScaleConfigSchema.safeParse(result.data.config);
+    return linearScale.success
+      ? { ...result.data, config: linearScale.data }
+      : null;
+  }
+
+  return result.data;
 };
 
 export const createSlug = () => crypto.randomUUID();
@@ -94,7 +124,7 @@ export const isEmptyAnswer = (value: unknown) =>
 
 const dateSchema = z.iso.date();
 const optionsSchema = z
-  .array(z.string().trim().min(1))
+  .array(z.string().trim().min(1).max(255))
   .refine((options) => new Set(options).size === options.length);
 
 const getOptions = (config: Record<string, unknown>) => {
@@ -110,10 +140,13 @@ export const validateAnswer = (
   if (isEmptyAnswer(value)) return null;
   switch (type) {
     case 1:
-    case 2:
-      return z.string().trim().min(1).safeParse(value).success
+      return z.string().trim().min(1).max(255).safeParse(value).success
         ? null
-        : "must be a string";
+        : "must be a string of 255 characters or fewer";
+    case 2:
+      return z.string().trim().min(1).max(5000).safeParse(value).success
+        ? null
+        : "must be a string of 5000 characters or fewer";
     case 3:
       return dateSchema.safeParse(value).success
         ? null
