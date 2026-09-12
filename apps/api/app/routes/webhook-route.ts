@@ -44,7 +44,7 @@ webhookRoutes.get("/:formId/webhook/deliveries", async (req, res) => {
     const result = await pool.query(
       `SELECT d.webhook_delivery_id, d.webhook_delivery_form_id,
               d.webhook_delivery_attempted_at,
-              d.webhook_delivery_status_code, d.webhook_delivery_error_message,
+              d.webhook_delivery_status_code,
               d.webhook_delivery_response_id
        FROM webhook_deliveries d
        INNER JOIN forms f ON f.form_id = d.webhook_delivery_form_id

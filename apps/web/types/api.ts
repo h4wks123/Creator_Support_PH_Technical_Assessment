@@ -119,7 +119,6 @@ export const webhookDeliverySchema = z.object({
   webhook_delivery_response_id: z.string(),
   webhook_delivery_attempted_at: z.string(),
   webhook_delivery_status_code: z.number().int().nullable(),
-  webhook_delivery_error_message: z.string().nullable(),
 });
 export type WebhookDeliveryRecord = z.infer<typeof webhookDeliverySchema>;
 export const webhookDeliveriesPayloadSchema = z.object({

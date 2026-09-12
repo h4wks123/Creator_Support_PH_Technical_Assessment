@@ -46,11 +46,14 @@ export default function WebhookSettings({
   };
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(340px,0.82fr)]">
+    <div className="grid gap-6">
       <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
             <h2 className="text-base font-semibold">Endpoint configuration</h2>
+            <p className="mt-1 text-xs text-slate-500">
+              Configure where submissions for “{formTitle}” should be sent.
+            </p>
           </div>
           <span
             className={`rounded-full px-3 py-1 text-xs font-medium ${isConfigured ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}
@@ -113,9 +116,6 @@ export default function WebhookSettings({
           <div>
             <h2 className="text-base font-semibold">Delivery log</h2>
           </div>
-          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-500">
-            {deliveries.length} attempts
-          </span>
         </div>
         {deliveries.length === 0 ? (
           <div className="mt-6 rounded-lg border border-dashed border-slate-300 px-5 py-10 text-center">
@@ -150,11 +150,6 @@ export default function WebhookSettings({
                       {status ?? "Failed"}
                     </span>
                   </div>
-                  {delivery.webhook_delivery_error_message ? (
-                    <p className="mt-2 text-xs text-red-600">
-                      {delivery.webhook_delivery_error_message}
-                    </p>
-                  ) : null}
                 </div>
               );
             })}
