@@ -51,9 +51,6 @@ export default function WebhookSettings({
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
             <h2 className="text-base font-semibold">Endpoint configuration</h2>
-            <p className="mt-1 text-xs text-slate-500">
-              Configure where submissions for “{formTitle}” should be sent.
-            </p>
           </div>
           <span
             className={`rounded-full px-3 py-1 text-xs font-medium ${isConfigured ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}
@@ -120,9 +117,6 @@ export default function WebhookSettings({
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="text-base font-semibold">Delivery log</h2>
-            <p className="mt-1 text-xs text-slate-500">
-              Every delivery attempt will appear here.
-            </p>
           </div>
           <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-500">
             {deliveries.length} attempts
