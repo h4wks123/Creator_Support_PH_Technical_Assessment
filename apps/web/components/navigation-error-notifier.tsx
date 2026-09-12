@@ -5,11 +5,11 @@ import { useSearchParams } from "next/navigation";
 import toaster from "@/components/toaster";
 
 const messages: Record<string, string> = {
-  load: "Unable to load webpage. Please try again.",
-  form: "Unable to load form. Please try again.",
-  responses: "Unable to load responses. Please try again.",
-  response: "Unable to load response. Please try again.",
-  webhook: "Unable to load webhook data. Please try again.",
+  load: "Unable to load webpage.",
+  form: "Unable to load form.",
+  responses: "Unable to load responses.",
+  response: "Unable to load response.",
+  webhook: "Unable to load webhook data.",
 };
 
 export default function NavigationErrorNotifier() {
