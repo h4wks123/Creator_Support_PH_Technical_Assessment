@@ -82,6 +82,7 @@ CREATE TABLE IF NOT EXISTS webhooks (
     webhook_form_id text NOT NULL UNIQUE REFERENCES forms (form_id) ON DELETE CASCADE,
     webhook_url text NOT NULL,
     webhook_secret text NOT NULL,
+    webhook_is_enabled boolean NOT NULL DEFAULT true,
     webhook_created_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     webhook_updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT webhooks_url_not_blank CHECK (length(btrim(webhook_url)) > 0),

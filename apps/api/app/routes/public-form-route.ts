@@ -28,6 +28,15 @@ publicFormRoutes.get("/:slug", async (req, res) => {
     }
 
     const first = result.rows[0];
+    logger.info(
+      {
+        formId: first.form_id,
+        slug: req.params.slug,
+        questionCount: result.rows.filter((row) => row.question_id !== null)
+          .length,
+      },
+      "Public form fetched",
+    );
     return res.status(200).json({
       form: {
         form_id: first.form_id,
@@ -164,8 +173,6 @@ publicFormRoutes.post("/:slug/responses", async (req, res) => {
       "Response submitted",
     );
 
-    // The response has been committed before delivery starts. Delivery errors
-    // are logged independently and never affect the respondent's submission.
     void deliverWebhook({
       formId: formResult.rows[0].form_id,
       formTitle: formResult.rows[0].form_title,

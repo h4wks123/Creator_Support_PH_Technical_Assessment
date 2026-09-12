@@ -13,6 +13,11 @@ export const parseWebhookConfig = (body: unknown) => {
   return result.success ? result.data : null;
 };
 
+export const parseWebhookToggle = (body: unknown) => {
+  const result = z.object({ enabled: z.boolean() }).safeParse(body);
+  return result.success ? result.data : null;
+};
+
 export const parseWebhookUpdate = (body: unknown) => {
   const result = z
     .object({

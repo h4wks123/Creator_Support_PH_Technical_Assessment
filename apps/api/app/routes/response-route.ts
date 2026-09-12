@@ -46,6 +46,10 @@ responseRoutes.get("/:formId/responses/:responseId", async (req, res) => {
       return res.status(404).json({ message: RESPONSE_ERROR_MESSAGE });
     }
 
+    logger.info(
+      { userId: user.userId, formId, responseId },
+      "Individual form response fetched",
+    );
     return res.status(200).json({ response: result.rows[0] });
   } catch (err) {
     logger.error(

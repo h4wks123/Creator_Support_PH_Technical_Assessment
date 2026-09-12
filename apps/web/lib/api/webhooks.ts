@@ -41,13 +41,30 @@ export async function getWebhookDeliveries(
 
 export async function saveWebhook(
   formId: string,
-  input: { url: string; secret: string },
+  input: { url: string; secret?: string },
+  existing = false,
 ): Promise<Webhook> {
   const response = await fetch(`${apiUrl()}/api/forms/${formId}/webhook`, {
-    method: "PUT",
+    method: existing ? "PATCH" : "PUT",
     headers: { ...authHeaders(), "Content-Type": "application/json" },
     body: JSON.stringify(input),
   });
   if (!response.ok) throw new Error("Unable to save webhook configuration");
+  return webhookPayloadSchema.parse(await response.json()).webhook!;
+}
+
+export async function toggleWebhook(
+  formId: string,
+  enabled: boolean,
+): Promise<Webhook> {
+  const response = await fetch(
+    `${apiUrl()}/api/forms/${formId}/webhook/status`,
+    {
+      method: "PATCH",
+      headers: { ...authHeaders(), "Content-Type": "application/json" },
+      body: JSON.stringify({ enabled }),
+    },
+  );
+  if (!response.ok) throw new Error("Unable to update webhook status");
   return webhookPayloadSchema.parse(await response.json()).webhook!;
 }

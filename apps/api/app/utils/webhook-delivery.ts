@@ -23,7 +23,7 @@ export const deliverWebhook = async (input: DeliveryInput) => {
   const configResult = await pool.query(
     `SELECT webhook_url, webhook_secret
      FROM webhooks
-     WHERE webhook_form_id = $1`,
+     WHERE webhook_form_id = $1 AND webhook_is_enabled = true`,
     [input.formId],
   );
   if (configResult.rowCount !== 1) return;

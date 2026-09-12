@@ -105,6 +105,7 @@ export const webhookRecordSchema = z.object({
   webhook_id: z.string(),
   webhook_form_id: z.string(),
   webhook_url: z.string(),
+  webhook_is_enabled: z.boolean(),
   webhook_created_at: z.string(),
   webhook_updated_at: z.string(),
   webhook_has_secret: z.boolean(),

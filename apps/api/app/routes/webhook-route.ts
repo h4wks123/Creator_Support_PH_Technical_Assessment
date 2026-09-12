@@ -4,6 +4,7 @@ import { verifyJWT } from "../middleware/auth-middleware.ts";
 import type { AuthenticatedUser } from "../types/auth-types.ts";
 import {
   parseWebhookConfig,
+  parseWebhookToggle,
   parseWebhookUpdate,
 } from "../types/webhook-types.ts";
 import { logger } from "../utils/logger.ts";
@@ -20,6 +21,7 @@ webhookRoutes.get("/:formId/webhook", async (req, res) => {
   try {
     const result = await pool.query(
       `SELECT w.webhook_id, w.webhook_form_id, w.webhook_url,
+              w.webhook_is_enabled,
               w.webhook_created_at, w.webhook_updated_at,
               true AS webhook_has_secret
        FROM webhooks w
@@ -28,6 +30,10 @@ webhookRoutes.get("/:formId/webhook", async (req, res) => {
       [req.params.formId, user.userId],
     );
 
+    logger.info(
+      { userId: user.userId, formId: req.params.formId },
+      "Webhook configuration fetched",
+    );
     return res.status(200).json({ webhook: result.rows[0] ?? null });
   } catch (err) {
     logger.error(
@@ -53,6 +59,14 @@ webhookRoutes.get("/:formId/webhook/deliveries", async (req, res) => {
       [req.params.formId, user.userId],
     );
 
+    logger.info(
+      {
+        userId: user.userId,
+        formId: req.params.formId,
+        deliveryCount: result.rowCount,
+      },
+      "Webhook deliveries fetched",
+    );
     return res.status(200).json({ deliveries: result.rows });
   } catch (err) {
     logger.error(
@@ -71,9 +85,10 @@ webhookRoutes.put("/:formId/webhook", async (req, res) => {
   try {
     const result = await pool.query(
       `INSERT INTO webhooks (
-         webhook_id, webhook_form_id, webhook_url, webhook_secret
+         webhook_id, webhook_form_id, webhook_url, webhook_secret,
+         webhook_is_enabled
        )
-       SELECT $1, f.form_id, $3, $4
+       SELECT $1, f.form_id, $3, $4, true
        FROM forms f
        WHERE f.form_id = $2 AND f.form_owner_id = $5
        ON CONFLICT (webhook_form_id) DO UPDATE SET
@@ -81,6 +96,7 @@ webhookRoutes.put("/:formId/webhook", async (req, res) => {
          webhook_secret = EXCLUDED.webhook_secret,
          webhook_updated_at = CURRENT_TIMESTAMP
        RETURNING webhook_id, webhook_form_id, webhook_url,
+                 webhook_is_enabled,
                  webhook_created_at, webhook_updated_at,
                  true AS webhook_has_secret`,
       [
@@ -94,6 +110,10 @@ webhookRoutes.put("/:formId/webhook", async (req, res) => {
 
     if (result.rowCount !== 1)
       return res.status(404).json({ message: WEBHOOK_ERROR_MESSAGE });
+    logger.info(
+      { userId: user.userId, formId: req.params.formId },
+      "Webhook configuration saved",
+    );
     return res.status(200).json({ webhook: result.rows[0] });
   } catch (err) {
     logger.error(
@@ -120,18 +140,64 @@ webhookRoutes.patch("/:formId/webhook", async (req, res) => {
          AND f.form_id = w.webhook_form_id
          AND f.form_owner_id = $4
        RETURNING w.webhook_id, w.webhook_form_id, w.webhook_url,
+                 w.webhook_is_enabled,
                  w.webhook_created_at, w.webhook_updated_at,
                  true AS webhook_has_secret`,
-      [input.url, input.secret ?? null, req.params.formId, user.userId],
+      [
+        input.url,
+        input.secret ?? null,
+        req.params.formId,
+        user.userId,
+      ],
     );
 
     if (result.rowCount !== 1)
       return res.status(404).json({ message: WEBHOOK_ERROR_MESSAGE });
+    logger.info(
+      { userId: user.userId, formId: req.params.formId },
+      "Webhook configuration updated",
+    );
     return res.status(200).json({ webhook: result.rows[0] });
   } catch (err) {
     logger.error(
       { error: err, userId: user.userId, formId: req.params.formId },
       "Webhook configuration update failed",
+    );
+    return res.status(500).json({ message: WEBHOOK_ERROR_MESSAGE });
+  }
+});
+
+webhookRoutes.patch("/:formId/webhook/status", async (req, res) => {
+  const user = getUser(res);
+  const input = parseWebhookToggle(req.body);
+  if (!input) return res.status(400).json({ message: WEBHOOK_ERROR_MESSAGE });
+
+  try {
+    const result = await pool.query(
+      `UPDATE webhooks w
+       SET webhook_is_enabled = $1,
+           webhook_updated_at = CURRENT_TIMESTAMP
+       FROM forms f
+       WHERE w.webhook_form_id = $2
+         AND f.form_id = w.webhook_form_id
+         AND f.form_owner_id = $3
+       RETURNING w.webhook_id, w.webhook_form_id, w.webhook_url,
+                 w.webhook_is_enabled, w.webhook_created_at,
+                 w.webhook_updated_at, true AS webhook_has_secret`,
+      [input.enabled, req.params.formId, user.userId],
+    );
+
+    if (result.rowCount !== 1)
+      return res.status(404).json({ message: WEBHOOK_ERROR_MESSAGE });
+    logger.info(
+      { userId: user.userId, formId: req.params.formId, enabled: input.enabled },
+      "Webhook delivery status changed",
+    );
+    return res.status(200).json({ webhook: result.rows[0] });
+  } catch (err) {
+    logger.error(
+      { error: err, userId: user.userId, formId: req.params.formId },
+      "Webhook delivery status update failed",
     );
     return res.status(500).json({ message: WEBHOOK_ERROR_MESSAGE });
   }
