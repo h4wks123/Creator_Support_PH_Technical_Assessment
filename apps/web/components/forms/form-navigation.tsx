@@ -98,6 +98,8 @@ export default function FormNavigation({ formId }: { formId: string }) {
             {form?.form_is_published ? (
               <Link
                 href={`/f/${form.form_slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-xs text-primary hover:underline"
               >
                 View form
