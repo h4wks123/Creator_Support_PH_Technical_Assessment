@@ -168,6 +168,7 @@ export default function FormBuilder({
     );
     try {
       await deleteQuestion(formId, question.id);
+      toaster(200, "Question deleted.");
     } catch {
       toaster(500, "Unable to delete question");
     }
@@ -187,7 +188,7 @@ export default function FormBuilder({
         ) : null}
         <textarea
           aria-label="Form description"
-          className="mt-4 min-h-12 w-full resize-y bg-transparent text-sm text-slate-500 outline-none"
+          className="mt-4 min-h-12 max-h-36 w-full resize-y bg-transparent text-sm text-slate-500 outline-none"
           value={draft.description}
           onChange={(event) => updateDraft({ description: event.target.value })}
           placeholder="Description (optional)"
