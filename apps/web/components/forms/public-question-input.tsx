@@ -1,5 +1,6 @@
 import type { FormQuestion } from "@/types/forms";
 import { cn } from "@/utils/utils";
+import MultiSelectInput from "@/components/forms/multi-select-input";
 
 export function FieldError({
   message,
@@ -85,23 +86,13 @@ export function QuestionInput({
       break;
     case "multi_select":
       input = (
-        <select
-          multiple
-          className={cn(inputClass, "min-h-28")}
+        <MultiSelectInput
           value={Array.isArray(value) ? value : []}
-          onChange={(event) =>
-            onChange(
-              Array.from(
-                event.target.selectedOptions,
-                (option) => option.value,
-              ),
-            )
-          }
-        >
-          {options.map((option) => (
-            <option key={option}>{option}</option>
-          ))}
-        </select>
+          options={options}
+          onChange={onChange}
+          className="mt-2"
+          aria-label={question.label}
+        />
       );
       break;
     case "multiple_choice":
