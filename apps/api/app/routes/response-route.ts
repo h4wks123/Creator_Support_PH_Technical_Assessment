@@ -112,6 +112,7 @@ async function exportResponses(req: Request, res: Response) {
     );
 
     if (formResult.rowCount !== 1) {
+      logger.error({ userId: user.userId, formId }, "Form does not exist");
       return res.status(404).json({ message: RESPONSE_ERROR_MESSAGE });
     }
 
@@ -145,7 +146,10 @@ async function exportResponses(req: Request, res: Response) {
       question_order: number;
     }>;
     const questionColumns = new Map(
-      questions.map((question) => [question.question_id, question.question_label]),
+      questions.map((question) => [
+        question.question_id,
+        question.question_label,
+      ]),
     );
     const responseRows = new Map<
       string,
