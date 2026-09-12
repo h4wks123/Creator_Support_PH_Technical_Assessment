@@ -179,7 +179,7 @@ export default function FormBuilder({
       <section className="border-b border-slate-200 pb-6">
         <input
           aria-label="Form title"
-          className="w-full bg-transparent font-[Poppins] text-2xl font-semibold outline-none"
+          className="w-full bg-transparent font-[Poppins] text-3xl font-semibold text-primary outline-none"
           value={draft.title}
           onChange={(event) => updateDraft({ title: event.target.value })}
         />
