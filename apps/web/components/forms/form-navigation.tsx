@@ -98,9 +98,15 @@ export default function FormNavigation({ formId }: { formId: string }) {
           >
             Responses
           </Link>
-          <button type="button" className="pb-3 pt-1 text-slate-400">
+          <Button
+            type="button"
+            variant="ghost"
+            size="ghost"
+            interaction="ghost"
+            className="pb-3 pt-1 text-slate-400"
+          >
             Webhook
-          </button>
+          </Button>
         </div>
       </div>
     </div>

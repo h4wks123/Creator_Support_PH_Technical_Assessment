@@ -99,10 +99,14 @@ export default function QuestionCard({
                       })
                     }
                   />
-                  <button
+                  <Button
                     type="button"
                     aria-label={`Remove option ${optionIndex + 1}`}
                     disabled={question.options.length <= 1}
+                    variant="ghost"
+                    size="ghost"
+                    interaction="ghost"
+                    className="px-1 text-slate-400 hover:text-delete"
                     onClick={() =>
                       update({
                         options: question.options.filter(
@@ -112,11 +116,15 @@ export default function QuestionCard({
                     }
                   >
                     ×
-                  </button>
+                  </Button>
                 </div>
               ))}
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="ghost"
+                text="small"
+                interaction="ghost"
                 className="ml-3 text-xs text-secondary hover:text-primary"
                 onClick={() =>
                   update({
@@ -128,7 +136,7 @@ export default function QuestionCard({
                 }
               >
                 Add option
-              </button>
+              </Button>
             </div>
           )}
 
@@ -214,13 +222,17 @@ export default function QuestionCard({
               >
                 ↓
               </Button>
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="ghost"
+                text="small"
+                interaction="ghost"
                 className="px-2 text-xs text-secondary hover:text-delete"
                 onClick={onDelete}
               >
                 Delete
-              </button>
+              </Button>
             </div>
           </div>
         </div>

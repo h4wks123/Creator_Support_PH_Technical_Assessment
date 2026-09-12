@@ -19,6 +19,7 @@ import {
   updateQuestion,
 } from "@/lib/api/questions";
 import toaster from "@/components/toaster";
+import { Button } from "@/components/button";
 
 const FORM_SAVE_DEBOUNCE_MS = 500;
 
@@ -186,15 +187,19 @@ export default function FormBuilder({
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <span className="mr-1 text-xs text-slate-500">Add question:</span>
           {QUESTION_TYPES.map((type) => (
-            <button
+            <Button
               type="button"
               key={type}
-              className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs hover:border-primary hover:text-primary"
+              variant="outline"
+              size="ghost"
+              text="small"
+              interaction="ghost"
+              className="rounded-md border-slate-300 bg-white px-3 py-1.5 text-xs hover:border-primary hover:text-primary"
               onClick={() => void addQuestion(type)}
               disabled={isSaving}
             >
               {QUESTION_TYPE_LABELS[type]}
-            </button>
+            </Button>
           ))}
         </div>
       </section>

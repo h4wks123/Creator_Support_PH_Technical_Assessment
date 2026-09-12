@@ -5,6 +5,7 @@ import toaster from "@/components/toaster";
 import { submitPublicForm, type PublicForm } from "@/lib/api/public-forms";
 import { validatePublicForm } from "@/utils/utils";
 import { FieldError, QuestionInput } from "@/components/forms/public-question-input";
+import { Button } from "@/components/button";
 
 type AnswerValue = string | string[] | number;
 
@@ -46,6 +47,6 @@ export default function PublicFormFields({ form }: { form: PublicForm }) {
   return <form onSubmit={handleSubmit} className="mx-auto max-w-3xl space-y-4">
     <FieldError message={errors.email}><label className="block text-sm font-medium" htmlFor="respondent-email">Email address <span className="text-primary">*</span></label><input id="respondent-email" type="email" required value={email} onChange={(event) => setEmail(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-primary" /></FieldError>
     {form.questions.map((question) => <QuestionInput key={question.id} question={question} value={answers[question.id]} error={errors[question.id]} onChange={(value) => updateAnswer(question.id, value)} />)}
-    <button type="submit" disabled={submitting} className="inline-flex h-10 items-center justify-center rounded-4xl bg-primary px-6 text-sm font-semibold text-white hover:bg-primary/95 disabled:opacity-50">{submitting ? "Submitting..." : "Submit response"}</button>
+    <Button type="submit" disabled={submitting} size="ghost" className="h-10 w-auto px-6 text-white">{submitting ? "Submitting..." : "Submit response"}</Button>
   </form>;
 }

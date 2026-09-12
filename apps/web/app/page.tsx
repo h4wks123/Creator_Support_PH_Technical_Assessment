@@ -1,19 +1,9 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
-import { deleteForm, getForms } from "@/lib/api/forms";
-
-async function deleteFormAction(formData: FormData) {
-  "use server";
-
-  const formId = formData.get("formId");
-  if (typeof formId !== "string" || !formId) return;
-
-  const authToken = (await cookies()).get("auth_token")?.value;
-  await deleteForm(formId, authToken);
-  revalidatePath("/");
-}
+import { getForms } from "@/lib/api/forms";
+import CreateFormButton from "@/components/forms/create-form-button";
+import DeleteFormButton from "@/components/forms/delete-form-button";
 
 export default async function HomePage() {
   const authToken = (await cookies()).get("auth_token")?.value;
@@ -26,12 +16,7 @@ export default async function HomePage() {
           <h1 className="font-[Poppins] text-3xl font-semibold tracking-tight sm:text-4xl">
             Your forms
           </h1>
-          <Link
-            href="/forms/new"
-            className="inline-flex h-10 w-28 items-center justify-center rounded-4xl bg-primary text-sm font-semibold text-white hover:bg-primary/95"
-          >
-            New form
-          </Link>
+          <CreateFormButton />
         </div>
         <div aria-label="Forms owned by you">
           {forms.length === 0 ? (
@@ -61,15 +46,7 @@ export default async function HomePage() {
                   >
                     Edit
                   </Link>
-                  <form action={deleteFormAction}>
-                    <input type="hidden" name="formId" value={form.form_id} />
-                    <button
-                      type="submit"
-                      className="px-3 py-2 text-delete hover:underline"
-                    >
-                      Delete
-                    </button>
-                  </form>
+                  <DeleteFormButton formId={form.form_id} />
                 </div>
               </div>
             ))
