@@ -23,8 +23,10 @@ export default async function ResponsesPage({
         </h1>
       </header>
       {responses.length === 0 ? (
-        <section className="max-w-360 px-5 mx-auto rounded-xl border border-slate-200 bg-white p-10 text-center shadow-sm">
-          <p className="text-sm text-slate-500">No responses yet.</p>
+        <section className="max-w-360 px-5 mx-auto">
+          <div className="px-5 rounded-xl border border-slate-200 bg-white p-10 text-center shadow-sm">
+            <p className="text-sm text-slate-500">No responses yet.</p>
+          </div>
         </section>
       ) : (
         <section className="max-w-360 px-5 mx-auto">
@@ -48,7 +50,8 @@ export default async function ResponsesPage({
                     {response.response_respondent_email}
                   </p>
                   <p className="mt-1 text-xs text-slate-500">
-                    Submitted <LocalDate value={response.response_submitted_at} />
+                    Submitted{" "}
+                    <LocalDate value={response.response_submitted_at} />
                   </p>
                 </div>
                 <Link
