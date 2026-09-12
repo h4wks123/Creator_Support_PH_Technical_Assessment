@@ -5,7 +5,7 @@
   "description": "Minimal in-memory webhook receiver for the Forms App",
   "type": "module",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js"
+    "start": "node --env-file-if-exists=../../.env server.js",
+    "dev": "node --env-file-if-exists=../../.env --watch server.js"
   }
 }

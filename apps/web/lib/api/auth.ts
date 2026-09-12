@@ -4,6 +4,7 @@ import {
   registerResponseSchema,
   type Credentials,
 } from "@/types/api";
+import { getPublicApiUrl } from "@/lib/api/config";
 
 const parseError = async (response: Response) => {
   const data = await response.json().catch(() => null);
@@ -13,7 +14,7 @@ const parseError = async (response: Response) => {
 export const loginUser = async (credentials: Credentials) => {
   const input = credentialsSchema.parse(credentials);
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_API_URL}/api/auth/login`,
+    `${getPublicApiUrl()}/api/auth/login`,
     {
       method: "POST",
       headers: {
@@ -30,7 +31,7 @@ export const loginUser = async (credentials: Credentials) => {
 export const registerUser = async (credentials: Credentials) => {
   const input = credentialsSchema.parse(credentials);
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_API_URL}/api/auth/register`,
+    `${getPublicApiUrl()}/api/auth/register`,
     {
       method: "POST",
       headers: {

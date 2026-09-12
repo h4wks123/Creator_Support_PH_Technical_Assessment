@@ -1,15 +1,11 @@
 import { getAuthToken } from "@/lib/auth";
+import { getApiUrl } from "@/lib/api/config";
 import {
   webhookDeliveriesPayloadSchema,
   webhookPayloadSchema,
   type WebhookDeliveryRecord,
   type WebhookRecord,
 } from "@/types/api";
-
-const apiUrl = () =>
-  typeof window === "undefined"
-    ? (process.env.APP_API_URL ?? process.env.NEXT_PUBLIC_APP_API_URL)
-    : process.env.NEXT_PUBLIC_APP_API_URL;
 
 const authHeaders = () => ({ Authorization: `Bearer ${getAuthToken()}` });
 
@@ -20,7 +16,7 @@ export async function getWebhook(
   formId: string,
   authToken?: string,
 ): Promise<Webhook | null> {
-  const response = await fetch(`${apiUrl()}/api/forms/${formId}/webhook`, {
+  const response = await fetch(`${getApiUrl()}/api/forms/${formId}/webhook`, {
     headers: { Authorization: `Bearer ${authToken ?? getAuthToken()}` },
   });
   if (!response.ok) throw new Error("Unable to load webhook configuration");
@@ -32,7 +28,7 @@ export async function getWebhookDeliveries(
   authToken?: string,
 ): Promise<WebhookDelivery[]> {
   const response = await fetch(
-    `${apiUrl()}/api/forms/${formId}/webhook/deliveries`,
+    `${getApiUrl()}/api/forms/${formId}/webhook/deliveries`,
     { headers: { Authorization: `Bearer ${authToken ?? getAuthToken()}` } },
   );
   if (!response.ok) throw new Error("Unable to load webhook deliveries");
@@ -44,7 +40,7 @@ export async function saveWebhook(
   input: { url: string; secret?: string },
   existing = false,
 ): Promise<Webhook> {
-  const response = await fetch(`${apiUrl()}/api/forms/${formId}/webhook`, {
+  const response = await fetch(`${getApiUrl()}/api/forms/${formId}/webhook`, {
     method: existing ? "PATCH" : "PUT",
     headers: { ...authHeaders(), "Content-Type": "application/json" },
     body: JSON.stringify(input),
@@ -58,7 +54,7 @@ export async function toggleWebhook(
   enabled: boolean,
 ): Promise<Webhook> {
   const response = await fetch(
-    `${apiUrl()}/api/forms/${formId}/webhook/status`,
+    `${getApiUrl()}/api/forms/${formId}/webhook/status`,
     {
       method: "PATCH",
       headers: { ...authHeaders(), "Content-Type": "application/json" },

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { getAuthToken } from "@/lib/auth";
+import { getApiUrl } from "@/lib/api/config";
 import {
   apiQuestionRecordSchema,
   messageResponseSchema,
@@ -7,11 +8,6 @@ import {
   questionIdsResponseSchema,
 } from "@/types/api";
 import { QUESTION_TYPES, type FormQuestion, type QuestionType } from "@/types/forms";
-
-const getApiUrl = () =>
-  typeof window === "undefined"
-    ? (process.env.APP_API_URL ?? process.env.NEXT_PUBLIC_APP_API_URL)
-    : process.env.NEXT_PUBLIC_APP_API_URL;
 
 const QUESTION_TYPE_IDS: Record<QuestionType, number> = {
   short_text: 1,
@@ -85,7 +81,7 @@ function getConfig(question: FormQuestion): Record<string, unknown> {
 
 export async function createQuestion(formId: string, question: FormQuestion) {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_API_URL}/api/forms/${formId}/questions`,
+    `${getApiUrl()}/api/forms/${formId}/questions`,
     {
       method: "POST",
       headers: {
@@ -107,7 +103,7 @@ export async function createQuestion(formId: string, question: FormQuestion) {
 
 export async function updateQuestion(formId: string, question: FormQuestion) {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_API_URL}/api/forms/${formId}/questions/${question.id}`,
+    `${getApiUrl()}/api/forms/${formId}/questions/${question.id}`,
     {
       method: "PATCH",
       headers: {
@@ -130,7 +126,7 @@ export async function updateQuestion(formId: string, question: FormQuestion) {
 
 export async function reorderQuestions(formId: string, questionIds: string[]) {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_API_URL}/api/forms/${formId}/questions/reorder`,
+    `${getApiUrl()}/api/forms/${formId}/questions/reorder`,
     {
       method: "PATCH",
       headers: {
@@ -150,7 +146,7 @@ export async function reorderQuestions(formId: string, questionIds: string[]) {
 
 export async function deleteQuestion(formId: string, questionId: string) {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_API_URL}/api/forms/${formId}/questions/${questionId}`,
+    `${getApiUrl()}/api/forms/${formId}/questions/${questionId}`,
     {
       method: "DELETE",
       headers: { Authorization: `Bearer ${getAuthToken()}` },

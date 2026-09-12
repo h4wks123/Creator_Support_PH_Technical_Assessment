@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/button";
 import toaster from "@/components/toaster";
 import { getAuthToken } from "@/lib/auth";
+import { getPublicApiUrl } from "@/lib/api/config";
 
 export default function ExportResponsesButton({ formId }: { formId: string }) {
   const [isExporting, setIsExporting] = useState(false);
@@ -12,7 +13,7 @@ export default function ExportResponsesButton({ formId }: { formId: string }) {
     setIsExporting(true);
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_APP_API_URL}/api/forms/${formId}/responses/export`,
+        `${getPublicApiUrl()}/api/forms/${formId}/responses/export`,
         { headers: { Authorization: `Bearer ${getAuthToken()}` } },
       );
       if (!response.ok) throw new Error("Unable to export responses");

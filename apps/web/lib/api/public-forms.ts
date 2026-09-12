@@ -1,11 +1,7 @@
 import { z } from "zod";
+import { getApiUrl } from "@/lib/api/config";
 import { publicFormRecordSchema } from "@/types/api";
 import { QUESTION_TYPES, formQuestionSchema } from "@/types/forms";
-
-const getApiUrl = () =>
-  typeof window === "undefined"
-    ? (process.env.APP_API_URL ?? process.env.NEXT_PUBLIC_APP_API_URL)
-    : process.env.NEXT_PUBLIC_APP_API_URL;
 
 export const publicFormSchema = z.object({
   id: z.string(),

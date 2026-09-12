@@ -1,4 +1,5 @@
 import { getAuthToken } from "@/lib/auth";
+import { getApiUrl } from "@/lib/api/config";
 import {
   formResponsePayloadSchema,
   formResponsesPayloadSchema,
@@ -13,7 +14,7 @@ export async function getFormResponses(
 ): Promise<FormResponse[]> {
   const token = authToken ?? getAuthToken();
   const response = await fetch(
-    `${process.env.APP_API_URL}/api/forms/${formId}/responses`,
+    `${getApiUrl()}/api/forms/${formId}/responses`,
     { headers: { Authorization: `Bearer ${token}` } },
   );
   if (!response.ok) throw new Error("Unable to load responses");
@@ -26,7 +27,7 @@ export async function getFormResponse(
   authToken = getAuthToken(),
 ): Promise<FormResponse> {
   const response = await fetch(
-    `${process.env.APP_API_URL}/api/forms/${formId}/responses/${responseId}`,
+    `${getApiUrl()}/api/forms/${formId}/responses/${responseId}`,
     { headers: { Authorization: `Bearer ${authToken}` } },
   );
   if (!response.ok) throw new Error("Unable to load response");

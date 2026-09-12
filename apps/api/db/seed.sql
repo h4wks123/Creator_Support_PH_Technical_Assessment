@@ -1,7 +1,13 @@
 \set ON_ERROR_STOP on
 \if :{?seed_webhook_secret}
 \else
-\set seed_webhook_secret 'development-secret'
+\echo 'seed_webhook_secret is required'
+\quit 3
+\endif
+\if :{?seed_webhook_url}
+\else
+\echo 'seed_webhook_url is required'
+\quit 3
 \endif
 
 BEGIN;
@@ -404,7 +410,7 @@ INSERT INTO webhooks (
 VALUES (
     'seed-webhook-onboarding',
     'seed-form-onboarding',
-    'http://webhook-consumer:4000/webhook',
+    :'seed_webhook_url',
     :'seed_webhook_secret',
     true,
     '2026-09-02T09:05:00Z',

@@ -1,7 +1,18 @@
 import { createServer } from "node:http";
 
-const port = Number(process.env.PORT ?? 4000);
-const webhookSecret = process.env.WEBHOOK_SECRET ?? "development-secret";
+const required = (name) => {
+  const value = process.env[name]?.trim();
+  if (!value) throw new Error(`Missing required environment variable: ${name}`);
+  return value;
+};
+
+const port = Number(required("WEBHOOK_CONSUMER_PORT"));
+if (!Number.isInteger(port) || port < 1 || port > 65_535) {
+  throw new Error(
+    "WEBHOOK_CONSUMER_PORT must be an integer between 1 and 65535",
+  );
+}
+const webhookSecret = required("WEBHOOK_SECRET");
 const receivedPayloads = [];
 const maxBodySize = 1024 * 1024;
 
@@ -114,5 +125,5 @@ const server = createServer(async (request, response) => {
 });
 
 server.listen(port, () => {
-  console.log(`Webhook consumer listening on http://localhost:${port}`);
+  console.log(`Webhook consumer listening on port ${port}`);
 });

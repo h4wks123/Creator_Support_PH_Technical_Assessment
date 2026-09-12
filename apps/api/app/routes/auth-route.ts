@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
-import "dotenv/config";
 import { Router } from "express";
 import jwt from "jsonwebtoken";
+import { env } from "../config/env.ts";
 import { pool } from "../config/psql-db.ts";
 import { logger } from "../utils/logger.ts";
 import { validateEmail, validatePassword } from "../utils/util.ts";
@@ -43,7 +43,7 @@ authRoutes.post("/login", async (req, res) => {
 
     const token = jwt.sign(
       { sub: user.user_id, email: user.user_email },
-      `${process.env.JWT_SECRET}`,
+      env.jwtSecret,
       { expiresIn: "1d" },
     );
 
@@ -85,7 +85,7 @@ authRoutes.post("/register", async (req, res) => {
     const user = result.rows[0];
     const token = jwt.sign(
       { sub: user.user_id, email: user.user_email },
-      `${process.env.JWT_SECRET}`,
+      env.jwtSecret,
       { expiresIn: "1d" },
     );
 

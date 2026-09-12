@@ -1,16 +1,12 @@
 import { z } from "zod";
 import { getAuthToken } from "@/lib/auth";
+import { getApiUrl } from "@/lib/api/config";
 import {
   formListRecordSchema,
   formRecordSchema,
   type FormListRecord,
   type FormRecord,
 } from "@/types/api";
-
-const getApiUrl = () =>
-  typeof window === "undefined"
-    ? (process.env.APP_API_URL ?? process.env.NEXT_PUBLIC_APP_API_URL)
-    : process.env.NEXT_PUBLIC_APP_API_URL;
 
 export type CreatedForm = FormRecord;
 export const FORM_UPDATED_EVENT = "form-updated";
@@ -35,7 +31,7 @@ export type UpdateFormInput = z.infer<typeof updateFormInputSchema>;
 export async function getForms(authToken?: string): Promise<FormListRecord[]> {
   const token = authToken ?? getAuthToken();
   const response = await fetch(
-    `${process.env.APP_API_URL ?? process.env.NEXT_PUBLIC_APP_API_URL}/api/forms`,
+    `${getApiUrl()}/api/forms`,
     {
       headers: { Authorization: `Bearer ${token}` },
     },
@@ -83,7 +79,7 @@ export async function updateFormStatus(
 ): Promise<CreatedForm> {
   const input = updateFormStatusInputSchema.parse({ isPublished });
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_API_URL}/api/forms/${formId}/status`,
+    `${getApiUrl()}/api/forms/${formId}/status`,
     {
       method: "PATCH",
       headers: {
@@ -104,7 +100,7 @@ export async function updateForm(
 ): Promise<CreatedForm> {
   const metadata = updateFormInputSchema.parse(input);
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_API_URL}/api/forms/${formId}`,
+    `${getApiUrl()}/api/forms/${formId}`,
     {
       method: "PATCH",
       headers: {
@@ -125,7 +121,7 @@ export async function deleteForm(
 ): Promise<void> {
   const token = authToken ?? getAuthToken();
   const response = await fetch(
-    `${process.env.APP_API_URL ?? process.env.NEXT_PUBLIC_APP_API_URL}/api/forms/${formId}`,
+    `${getApiUrl()}/api/forms/${formId}`,
     {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },

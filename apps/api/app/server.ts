@@ -6,12 +6,12 @@ import publicFormRoutes from "./routes/public-form-route.ts";
 import questionRoutes from "./routes/question-route.ts";
 import responseRoutes from "./routes/response-route.ts";
 import webhookRoutes from "./routes/webhook-route.ts";
+import { env } from "./config/env.ts";
 import { logger } from "./utils/logger.ts";
 
 const app = express();
-const port = 5000;
 const corsOption = {
-  origin: "http://localhost:3000",
+  origin: env.corsOrigin,
   credentials: true,
 };
 
@@ -25,8 +25,8 @@ app.use("/api/forms", responseRoutes);
 app.use("/api/forms", webhookRoutes);
 app.use("/api/public/forms", publicFormRoutes);
 
-const server = app.listen(port, () => {
-  logger.info(`Example app listening on port ${port}`);
+const server = app.listen(env.apiPort, () => {
+  logger.info({ port: env.apiPort }, "Forms API listening");
 });
 
 server.on("error", (err) => {
