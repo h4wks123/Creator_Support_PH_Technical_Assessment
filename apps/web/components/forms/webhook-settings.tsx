@@ -104,11 +104,6 @@ export default function WebhookSettings({
             >
               {isSaving ? "Saving..." : "Save configuration"}
             </Button>
-            {isConfigured ? (
-              <span className="text-xs text-emerald-700">
-                Saved by the API.
-              </span>
-            ) : null}
           </div>
         </form>
       </section>
