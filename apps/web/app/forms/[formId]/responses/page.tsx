@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getFormResponses } from "@/lib/api/responses";
 import LocalDate from "@/components/local-date";
+import ExportResponsesButton from "@/components/forms/export-responses-button";
 
 export default async function ResponsesPage({
   params,
@@ -21,6 +22,7 @@ export default async function ResponsesPage({
         <h1 className="mt-1 font-[Poppins] text-3xl font-semibold text-primary">
           Form responses
         </h1>
+        <ExportResponsesButton formId={formId} />
       </header>
       {responses.length === 0 ? (
         <section className="max-w-360 px-5 mx-auto">
