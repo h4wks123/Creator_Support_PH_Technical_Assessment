@@ -1,6 +1,7 @@
-import { notFound } from "next/navigation";
-import PublicFormFields from "@/components/forms/public-form-fields";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { getPublicForm, type PublicForm } from "@/lib/api/public-forms";
+import PublicFormFields from "@/components/forms/public-form-fields";
 
 export default async function PublicFormPage({
   params,
@@ -8,7 +9,10 @@ export default async function PublicFormPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const form: PublicForm = await getPublicForm(slug).catch(() => notFound());
+  const form: PublicForm = await getPublicForm(slug).catch(async () => {
+    const isLoggedIn = Boolean((await cookies()).get("auth_token")?.value);
+    redirect(isLoggedIn ? "/" : "/login");
+  });
 
   return (
     <main className="min-h-[calc(100dvh-57px)] bg-page py-10 text-secondary">
