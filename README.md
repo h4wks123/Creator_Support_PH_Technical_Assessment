@@ -1,6 +1,6 @@
 # Creator Support PH Technical Assessment
 
-This application was developed as a technical assessment for Creator Support PH, inspired by Google Forms. It allows authenticated creators to build, customize, and publish forms, review submitted responses, export response data to XLSX, and configure response webhooks. Once a form is published, anyone with its shareable URL can submit a response without needing to sign in. The application also includes a separate webhook consumer website that receives and displays webhook payloads through a lightweight, minimal HTML, CSS, and JavaScript interface.
+This repository was created strictly as a technical assessment for the full-stack developer position at Creator Support PH. The application contains features such as authenticated creators to build, customize, and publish forms, review submitted responses, export response data to XLSX, and configure response webhooks. Once a form is published, anyone with its shareable URL can submit a response without needing to sign in. The application also includes a separate webhook consumer website that receives and displays webhook payloads through a lightweight, minimal HTML, CSS, and JavaScript interface.
 
 ## Features
 
@@ -403,3 +403,6 @@ docker compose config --quiet
 - Email notifications
 - Conditional logic, branching, or page breaks
 - Collaborators and team-shared forms
+
+## Project Status
+All rights to the original architecture and implementation are retained by the author.
