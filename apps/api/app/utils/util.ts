@@ -114,7 +114,7 @@ const questionOptionsSchema = z
       .min(1)
       .refine((options) => new Set(options).size === options.length),
   })
-  .passthrough();
+  .loose();
 const linearScaleConfigSchema = z
   .object({
     min: z.number().int(),

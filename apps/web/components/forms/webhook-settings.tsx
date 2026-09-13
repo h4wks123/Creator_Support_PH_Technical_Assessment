@@ -196,6 +196,11 @@ export default function WebhookSettings({
                       {status ?? "Failed"}
                     </span>
                   </div>
+                  {delivery.webhook_delivery_error_message ? (
+                    <p className="mt-2 text-xs leading-5 text-red-700">
+                      {delivery.webhook_delivery_error_message}
+                    </p>
+                  ) : null}
                 </div>
               );
             })}
