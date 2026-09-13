@@ -159,44 +159,83 @@ export const validateAnswer = (
   config: Record<string, unknown>,
   value: unknown,
 ): string | null => {
-  if (isEmptyAnswer(value)) return null;
+  const result = parseAnswer(type, config, value);
+  return result.success ? null : result.error;
+};
+
+const parseAnswer = (
+  type: number,
+  config: Record<string, unknown>,
+  value: unknown,
+): { success: true; data: unknown } | { success: false; error: string } => {
+  if (isEmptyAnswer(value)) return { success: true, data: null };
   switch (type) {
-    case 1:
-      return z.string().trim().min(1).max(255).safeParse(value).success
-        ? null
-        : "must be a string of 255 characters or fewer";
-    case 2:
-      return z.string().trim().min(1).max(5000).safeParse(value).success
-        ? null
-        : "must be a string of 5000 characters or fewer";
-    case 3:
-      return dateSchema.safeParse(value).success
-        ? null
-        : "must be a valid date (YYYY-MM-DD)";
+    case 1: {
+      const result = z.string().trim().min(1).max(255).safeParse(value);
+      return result.success
+        ? result
+        : {
+            success: false,
+            error: "must be a string of 255 characters or fewer",
+          };
+    }
+    case 2: {
+      const result = z.string().trim().min(1).max(5000).safeParse(value);
+      return result.success
+        ? result
+        : {
+            success: false,
+            error: "must be a string of 5000 characters or fewer",
+          };
+    }
+    case 3: {
+      const result = dateSchema.safeParse(value);
+      return result.success
+        ? result
+        : { success: false, error: "must be a valid date (YYYY-MM-DD)" };
+    }
     case 4:
     case 6: {
       const options = getOptions(config);
-      return options &&
-        z
-          .string()
-          .refine((answer) => options.includes(answer.trim()))
-          .safeParse(value).success
-        ? null
-        : "must match one of the configured options";
+      if (!options)
+        return {
+          success: false,
+          error: "must match one of the configured options",
+        };
+      const result = z
+        .string()
+        .trim()
+        .refine((answer) => options.includes(answer))
+        .safeParse(value);
+      return result.success
+        ? result
+        : {
+            success: false,
+            error: "must match one of the configured options",
+          };
     }
     case 5:
     case 7: {
       const options = getOptions(config);
+      if (!options)
+        return {
+          success: false,
+          error: "must contain only configured options",
+        };
       const answerSchema = z
         .array(z.string().trim().min(1))
         .refine(
           (answers) =>
-            answers.every((answer) => options?.includes(answer)) &&
+            answers.every((answer) => options.includes(answer)) &&
             new Set(answers).size === answers.length,
         );
-      return options && answerSchema.safeParse(value).success
-        ? null
-        : "must contain only configured options";
+      const result = answerSchema.safeParse(value);
+      return result.success
+        ? result
+        : {
+            success: false,
+            error: "must contain only configured options",
+          };
     }
     case 8: {
       const scale = z
@@ -209,12 +248,37 @@ export const validateAnswer = (
         numericValue !== null &&
         numericValue >= scale.data.min &&
         numericValue <= scale.data.max
-        ? null
-        : "must be an integer within the configured range";
+        ? { success: true, data: answer.data }
+        : {
+            success: false,
+            error: "must be an integer within the configured range",
+          };
     }
     default:
-      return "has an unsupported question type";
+      return { success: false, error: "has an unsupported question type" };
   }
+};
+
+export const normalizeSubmission = (
+  input: SubmitResponseInput,
+  questions: QuestionForResponseValidation[],
+): SubmitResponseInput => {
+  const questionsById = new Map(
+    questions.map((question) => [question.question_id, question]),
+  );
+  return {
+    ...input,
+    answers: input.answers.map((answer) => {
+      const question = questionsById.get(answer.questionId);
+      if (!question) return answer;
+      const result = parseAnswer(
+        question.question_type,
+        question.question_config,
+        answer.value,
+      );
+      return result.success ? { ...answer, value: result.data } : answer;
+    }),
+  };
 };
 
 export const validateSubmission = (

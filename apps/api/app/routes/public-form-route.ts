@@ -1,7 +1,11 @@
 import { Router } from "express";
 import { pool } from "../config/psql-db.ts";
 import { logger } from "../utils/logger.ts";
-import { parseSubmitResponse, validateSubmission } from "../utils/util.ts";
+import {
+  normalizeSubmission,
+  parseSubmitResponse,
+  validateSubmission,
+} from "../utils/util.ts";
 import {
   webhookConnectionSchema,
   type WebhookDeliveryInput,
@@ -180,8 +184,12 @@ publicFormRoutes.post("/:slug/responses", async (req, res) => {
       return res.status(400).json({ message: FORM_ERROR_MESSAGE });
     }
 
+    const normalizedInput = normalizeSubmission(input, questions);
     const answersById = new Map(
-      input.answers.map((answer) => [answer.questionId, answer.value]),
+      normalizedInput.answers.map((answer) => [
+        answer.questionId,
+        answer.value,
+      ]),
     );
 
     const responseId = crypto.randomUUID();
@@ -230,7 +238,7 @@ publicFormRoutes.post("/:slug/responses", async (req, res) => {
       [
         responseId,
         formResult.rows[0].form_id,
-        input.email,
+        normalizedInput.email,
         JSON.stringify(answerSnapshots),
       ],
     );
@@ -248,7 +256,7 @@ publicFormRoutes.post("/:slug/responses", async (req, res) => {
       formId: formResult.rows[0].form_id,
       formTitle: formResult.rows[0].form_title,
       responseId,
-      email: input.email,
+      email: normalizedInput.email,
       submittedAt: responseResult.rows[0].response_submitted_at,
       answers: questions.map((question) => ({
         questionId: question.question_id,
