@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { getApiUrl } from "@/lib/api/config";
+import { getApiUrl } from "@/utils/utils";
 import { publicFormRecordSchema } from "@/types/api";
 import { QUESTION_TYPES, formQuestionSchema } from "@/types/forms";
 

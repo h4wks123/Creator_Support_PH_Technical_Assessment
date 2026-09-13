@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/button";
 import toaster from "@/components/toaster";
 import { getAuthToken } from "@/lib/auth";
-import { getPublicApiUrl } from "@/lib/api/config";
+import { getPublicApiUrl } from "@/utils/utils";
 
 export default function ExportResponsesButton({ formId }: { formId: string }) {
   const [isExporting, setIsExporting] = useState(false);

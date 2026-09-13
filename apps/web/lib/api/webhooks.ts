@@ -1,5 +1,5 @@
 import { getAuthToken } from "@/lib/auth";
-import { getApiUrl } from "@/lib/api/config";
+import { getApiUrl } from "@/utils/utils";
 import {
   webhookDeliveriesPayloadSchema,
   webhookPayloadSchema,

@@ -6,7 +6,7 @@ import publicFormRoutes from "./routes/public-form-route.ts";
 import questionRoutes from "./routes/question-route.ts";
 import responseRoutes from "./routes/response-route.ts";
 import webhookRoutes from "./routes/webhook-route.ts";
-import { env } from "./config/env.ts";
+import { env } from "./utils/util.ts";
 import { logger } from "./utils/logger.ts";
 
 const app = express();

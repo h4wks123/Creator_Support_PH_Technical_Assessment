@@ -4,7 +4,7 @@ import {
   registerResponseSchema,
   type Credentials,
 } from "@/types/api";
-import { getPublicApiUrl } from "@/lib/api/config";
+import { getPublicApiUrl } from "@/utils/utils";
 
 const parseError = async (response: Response) => {
   const data = await response.json().catch(() => null);

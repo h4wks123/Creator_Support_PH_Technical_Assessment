@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import { Router } from "express";
 import jwt from "jsonwebtoken";
-import { env } from "../config/env.ts";
+import { env } from "../utils/util.ts";
 import { pool } from "../config/psql-db.ts";
 import { logger } from "../utils/logger.ts";
 import { validateEmail, validatePassword } from "../utils/util.ts";

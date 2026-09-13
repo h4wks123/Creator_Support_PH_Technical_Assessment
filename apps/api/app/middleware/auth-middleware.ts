@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import { env } from "../config/env.ts";
+import { env } from "../utils/util.ts";
 import type { AuthenticatedUser, JwtClaims } from "../types/auth-types.ts";
 import { logger } from "../utils/logger.ts";
 
