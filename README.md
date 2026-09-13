@@ -108,7 +108,7 @@ openssl rand -hex 32
 | `NEXT_PUBLIC_APP_API_URL` | Browser | Public API base URL bundled into the web client | No |
 | `WEBHOOK_CONSUMER_PORT` | Consumer and Compose | Consumer listen and host port | No |
 | `WEBHOOK_SECRET` | Seed and consumer | Verifies seeded webhook deliveries | Yes |
-| `SEED_WEBHOOK_URL` | Seed | Endpoint stored on the seeded form | No |
+| `SEED_WEBHOOK_URL` | Seed and web | Endpoint stored on the seeded form and prefilled for new webhook configurations | No |
 
 The API validates required configuration when it starts. Web API clients also throw a clear configuration error when their applicable API URL is missing. The untracked `.env` remains local; `.env.example` contains only safe placeholders and may be committed.
 

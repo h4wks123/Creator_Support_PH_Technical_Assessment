@@ -27,6 +27,7 @@ export default async function WebhookPage({
           formTitle={data.form.form_title}
           webhook={data.webhook}
           deliveries={data.deliveries}
+          defaultWebhookUrl={data.defaultWebhookUrl}
         />
       </div>
     </main>

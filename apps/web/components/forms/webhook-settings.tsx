@@ -16,13 +16,17 @@ export default function WebhookSettings({
   formTitle,
   webhook,
   deliveries,
+  defaultWebhookUrl,
 }: {
   formId: string;
   formTitle: string;
   webhook: Webhook | null;
   deliveries: readonly WebhookDelivery[];
+  defaultWebhookUrl: string;
 }) {
-  const [url, setUrl] = useState(webhook?.webhook_url ?? "");
+  const [url, setUrl] = useState(
+    webhook?.webhook_url ?? defaultWebhookUrl,
+  );
   const [secret, setSecret] = useState("");
   const [showSecret, setShowSecret] = useState(false);
   const [isSaving, setIsSaving] = useState(false);

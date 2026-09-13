@@ -14,5 +14,6 @@ export async function loadWebhookPage(formId: string) {
     form,
     webhook,
     deliveries,
+    defaultWebhookUrl: process.env.SEED_WEBHOOK_URL?.trim() ?? "",
   };
 }
