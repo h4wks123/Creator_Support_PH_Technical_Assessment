@@ -230,6 +230,36 @@ Registration hashes passwords with bcrypt. Login returns a JWT containing the us
 
 All form-management routers verify the JWT. Database queries for forms, questions, responses, XLSX exports, webhook settings, and delivery logs include the authenticated owner ID. Public form retrieval and submission are unauthenticated but require the form to be published. Submission checks publication again during persistence so an unpublished form cannot accept a late response.
 
+## Technical decisions and trade-offs
+
+### Relational core with JSONB at the variable edges
+
+Forms, questions, responses, answers, webhooks, and delivery attempts are separate relational tables with foreign keys and indexes around their ownership and common access paths. Question-type-specific configuration and submitted values use JSONB because their shapes vary: an option question stores an array of choices, a linear scale stores bounds and labels, and an answer may be a string, number, array, or `null`.
+
+This keeps ownership, ordering, and response relationships queryable without creating a table for every question type. The trade-off is that PostgreSQL cannot express every type-specific rule as a simple column constraint, so Zod schemas and API validation enforce configuration shape, required answers, option membership, date format, text limits, and scale bounds before data is written.
+
+### Historical responses use answer snapshots
+
+The application does not maintain a versioned copy of the entire form. Instead, each submitted answer snapshots the question ID, label, type, order, configuration, and value as they existed at submission time. A snapshot is written for every question, including optional questions left unanswered. Current questions are edited in place and soft-deleted with `question_deleted_at`; the answer-to-question foreign key is nullable and uses `ON DELETE SET NULL` as an additional safeguard, while the snapshot remains self-contained.
+
+This was chosen over a form-version table because the required historical read path is direct: an individual response can be rendered entirely from its answer rows and is unaffected by later question edits, reordering, or deletion. The trade-off is that the application cannot reconstruct, compare, or restore complete historical form versions. That would be the point at which explicit `form_versions` and versioned question definitions become worthwhile.
+
+### Authorization is enforced at the data boundary
+
+The web app uses a one-day JWT in a `SameSite=Lax` cookie and sends it to protected API routes as a bearer token. The Next.js middleware provides navigation-level redirects, but it is not treated as the security boundary. The Express middleware verifies the JWT, and protected SQL queries also include the authenticated owner ID so possession of another form or response ID does not grant access.
+
+For a production system, I would move token issuance behind a same-origin backend-for-frontend and use `HttpOnly`, `Secure` cookies with a refresh/revocation strategy. The browser-readable cookie used here keeps the assessment's separate Next.js and Express applications simple, but it is not the session design I would choose for a production deployment.
+
+### Submission and webhook delivery have separate outcomes
+
+Response persistence is atomic: the response and its answer snapshots are inserted together, with publication checked again in the write query. Only after that succeeds does the API start webhook delivery. The webhook has a ten-second timeout, and its result is recorded separately, so a slow or unavailable consumer cannot roll back or fail a valid respondent submission. Retries and a durable job queue were intentionally omitted because the specification does not require them; in production, an outbox-backed worker would provide stronger delivery guarantees.
+
+## Known requirement deviation
+
+The specification asks for the owner's response overview to be a table of all submissions. The implemented overview is instead a list of submissions showing respondent email and submission time, with a link to open each response in full.
+
+This is a deliberate presentation trade-off. Because questions can be edited, added, reordered, or deleted between submissions, respondents to the same form can have different effective question revisions. A single on-screen table would either mix those revisions under ambiguous columns or become very wide and sparse. The per-response detail view preserves the exact snapshotted labels and ordering for that submission. The XLSX export is the tabular workflow: it produces one row per response, includes columns for the form's question IDs (including soft-deleted questions), and leaves cells blank when a response predates or did not answer a question.
+
 ## Data model
 
 | Table | Responsibility |
@@ -261,10 +291,6 @@ Question types are stored as numeric IDs, while type-specific settings live in `
 
 The API validates required answers, option membership, date format, text limits, and linear-scale bounds before writing a response.
 
-### Historical response strategy
-
-Each answer stores a snapshot of the question ID, label, type, order, configuration, and submitted value. Editing or soft-deleting the current question therefore does not change the individual historical response. This keeps old responses understandable without introducing a separate form-version table.
-
 ## Responses and XLSX export
 
 Owners can view every submission for a form and open an individual response. Each response records the required respondent email, submission timestamp, and one answer snapshot per question. The same email may submit the same form any number of times.
@@ -273,16 +299,38 @@ The owner-only export endpoint creates an `.xlsx` file server-side with one row 
 
 ## Webhooks
 
-A form owner configures a URL and secret in the form's Webhook tab. For Compose, point a form at:
+A webhook is generated by a successful public form submission; saving the webhook configuration itself does not send a test event. The API commits the response first, then starts a non-blocking HTTP `POST` to the configured endpoint with a ten-second timeout. It sends the configured secret in `X-Webhook-Secret`. Webhook failure never changes a successful respondent submission, and retries are intentionally not implemented.
 
-```text
-URL:    http://webhook-consumer:4000/webhook
-Secret: the value of WEBHOOK_SECRET
-```
+### Configure and verify the included consumer
 
-For fully native execution, use `http://localhost:4000/webhook`. The consumer list is viewed from the host at `http://localhost:4000` in either setup.
+The consumer is already started by `docker compose up` and runs at `http://localhost:4000` from the host. To exercise the full flow:
 
-After a response transaction commits, the API starts a non-blocking HTTP POST with a ten-second timeout and sends the secret in `X-Webhook-Secret`. Webhook failure never changes a successful respondent submission. Attempts are stored with timestamp, status code, and any error message. Retries are intentionally not implemented.
+1. In `.env`, set `WEBHOOK_SECRET` to the secret the consumer should accept, then start the stack. If the consumer was already running when the value changed, recreate its container so it receives the new environment.
+2. Log in at `http://localhost:3000`, create or open a form, and select its **Webhook** tab.
+3. Enter the URL and secret shown below, then select **Save configuration**.
+
+   ```text
+   Docker Compose
+   URL:    http://webhook-consumer:4000/webhook
+   Secret: the exact value of WEBHOOK_SECRET in .env
+
+   Fully native execution
+   URL:    http://localhost:4000/webhook
+   Secret: the exact value of WEBHOOK_SECRET in .env
+   ```
+
+   Under Compose, `localhost` is not the correct saved URL: webhook delivery originates inside the API container, where `localhost` refers to that container. The Docker service name `webhook-consumer` routes the request to the consumer. The host URL is used only to view the consumer in a browser.
+4. In the form header, select **Publish**, then **View form**. Fill in the required email and questions and submit the public form. Every successful submission creates an independent response and triggers one webhook attempt when the webhook is enabled.
+5. Open `http://localhost:4000` to see the received JSON payload. The page refreshes every five seconds and stores accepted payloads only in memory, so restarting the consumer clears the list.
+6. Return to the form's **Webhook** tab and refresh the page to inspect **Delivery log**. HTTP `200` means the included consumer accepted the payload. HTTP `401` usually means the saved form secret does not match `WEBHOOK_SECRET`; **Failed** with no status generally means the URL was unreachable or timed out. The log records the consumer's HTTP response status, not a second form response.
+
+The **Enable webhook deliveries** switch stops new deliveries without deleting the URL, secret, or existing log. After a webhook has been saved, leaving the secret field empty while saving another URL keeps the existing secret; entering a value replaces it.
+
+If the optional seed was run, the seeded published form is already pointed at the Compose consumer URL. Its saved secret is the `WEBHOOK_SECRET` value that was passed to the seed command.
+
+### Delivery and consumer behavior
+
+The consumer accepts `POST /webhook`, verifies `X-Webhook-Secret`, returns `401` for a missing or incorrect secret, and returns `200` after storing valid JSON. It renders accepted payloads at `GET /`; `GET /health` provides a basic health response. Delivery attempts are stored in PostgreSQL with their timestamp, status code, and error message, while received consumer payloads are intentionally in-memory only.
 
 ### Payload contract
 
@@ -313,8 +361,6 @@ After a response transaction commits, the API starts a non-blocking HTTP POST wi
   }
 }
 ```
-
-The consumer accepts `POST /webhook`, returns `401` for a missing or incorrect secret, keeps accepted payloads in memory, and renders them at `GET /`. Its `GET /health` endpoint returns a basic health response. Consumer data is intentionally lost when the process restarts.
 
 ## API route summary
 
