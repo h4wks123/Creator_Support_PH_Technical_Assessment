@@ -126,10 +126,14 @@ export default function FormBuilder({
         reorderedQuestions[target],
         reorderedQuestions[latestIndex],
       ];
-      setDraft((current) => ({ ...current, questions: reorderedQuestions }));
+      const normalizedQuestions = reorderedQuestions.map((question, index) => ({
+        ...question,
+        order: index + 1,
+      }));
+      setDraft((current) => ({ ...current, questions: normalizedQuestions }));
       await reorderQuestions(
         formId,
-        reorderedQuestions.map((question) => question.id),
+        normalizedQuestions.map((question) => question.id),
       );
     } catch {
       const latestQuestions = await getQuestions(formId).catch(() => null);

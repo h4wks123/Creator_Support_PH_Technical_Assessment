@@ -105,3 +105,6 @@ CREATE INDEX IF NOT EXISTS answers_response_order_idx
     ON answers (answer_response_id, answer_question_order);
 CREATE INDEX IF NOT EXISTS webhook_deliveries_form_attempted_idx
     ON webhook_deliveries (webhook_delivery_form_id, webhook_delivery_attempted_at DESC);
+CREATE UNIQUE INDEX IF NOT EXISTS questions_form_order_unique_idx
+    ON questions (question_form_id, question_order)
+    WHERE question_deleted_at IS NULL;

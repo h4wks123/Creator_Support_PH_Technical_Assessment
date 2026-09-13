@@ -1,5 +1,6 @@
 import { Router } from "express";
 import type { Response } from "express";
+import type { PoolClient } from "pg";
 import { pool } from "../config/psql-db.ts";
 import { verifyJWT } from "../middleware/auth-middleware.ts";
 import type { AuthenticatedUser } from "../types/auth-types.ts";
@@ -70,12 +71,17 @@ questionRoutes.post("/:formId/questions", async (req, res) => {
     return res.status(400).json({ message: QUESTION_ERROR_MESSAGE });
   }
 
+  let client: PoolClient | null = null;
   try {
-    const ownership = await pool.query(
-      "SELECT form_id FROM forms WHERE form_id = $1 AND form_owner_id = $2",
+    client = await pool.connect();
+    await client.query("BEGIN");
+
+    const ownership = await client.query(
+      "SELECT form_id FROM forms WHERE form_id = $1 AND form_owner_id = $2 FOR UPDATE",
       [formId, getUser(res).userId],
     );
     if (ownership.rowCount !== 1) {
+      await client.query("ROLLBACK");
       logger.error(
         { userId: getUser(res).userId, formId },
         "Form ownership check failed",
@@ -83,21 +89,18 @@ questionRoutes.post("/:formId/questions", async (req, res) => {
       return res.status(404).json({ message: QUESTION_ERROR_MESSAGE });
     }
 
-    const nextOrder =
-      question.order === undefined
-        ? Number(
-            (
-              await pool.query(
-                `SELECT COALESCE(MAX(question_order), 0) + 1 AS next_order
-                 FROM questions
-                 WHERE question_form_id = $1 AND question_deleted_at IS NULL`,
-                [formId],
-              )
-            ).rows[0].next_order,
-          )
-        : question.order;
+    const nextOrder = Number(
+      (
+        await client.query(
+          `SELECT COALESCE(MAX(question_order), 0) + 1 AS next_order
+           FROM questions
+           WHERE question_form_id = $1 AND question_deleted_at IS NULL`,
+          [formId],
+        )
+      ).rows[0].next_order,
+    );
 
-    const result = await pool.query(
+    const result = await client.query(
       `INSERT INTO questions (
          question_id, question_form_id, question_label, question_type,
          question_order, question_is_required, question_config
@@ -116,6 +119,7 @@ questionRoutes.post("/:formId/questions", async (req, res) => {
         question.config,
       ],
     );
+    await client.query("COMMIT");
 
     logger.info(
       {
@@ -127,11 +131,14 @@ questionRoutes.post("/:formId/questions", async (req, res) => {
     );
     return res.status(201).json({ question: result.rows[0] });
   } catch (err) {
+    await client?.query("ROLLBACK").catch(() => undefined);
     logger.error(
       { error: err, userId: getUser(res).userId, formId },
       "Question creation failed",
     );
     return res.status(500).json({ message: QUESTION_ERROR_MESSAGE });
+  } finally {
+    client?.release();
   }
 });
 
@@ -148,54 +155,80 @@ questionRoutes.patch("/:formId/questions/reorder", async (req, res) => {
     return res.status(400).json({ message: QUESTION_ERROR_MESSAGE });
   }
 
+  let client: PoolClient | null = null;
   try {
-    const reordered = await pool.query(
-      `WITH requested AS (
-         SELECT question_id, question_order
-         FROM unnest($1::text[]) WITH ORDINALITY
-           AS requested(question_id, question_order)
-       ),
-       active_questions AS (
-         SELECT q.question_id
-         FROM questions q
-         INNER JOIN forms f ON f.form_id = q.question_form_id
-         WHERE q.question_form_id = $2
-           AND q.question_deleted_at IS NULL
-           AND f.form_owner_id = $3
-       ),
-       valid_request AS (
-         SELECT
-           (SELECT COUNT(*) FROM requested) =
-             (SELECT COUNT(*) FROM active_questions)
-           AND NOT EXISTS (
-             SELECT 1
-             FROM requested r
-             WHERE NOT EXISTS (
-               SELECT 1
-               FROM active_questions a
-               WHERE a.question_id = r.question_id
-             )
-           ) AS is_valid
-       )
-       UPDATE questions q
-       SET question_order = requested.question_order,
-           question_updated_at = CURRENT_TIMESTAMP
-       FROM requested, valid_request
-       WHERE valid_request.is_valid
-         AND q.question_id = requested.question_id
-         AND q.question_form_id = $2
-         AND q.question_deleted_at IS NULL
-       RETURNING q.question_id`,
-      [questionIds, formId, getUser(res).userId],
-    );
+    client = await pool.connect();
+    await client.query("BEGIN");
 
-    if (reordered.rowCount !== questionIds.length) {
+    const ownership = await client.query(
+      "SELECT form_id FROM forms WHERE form_id = $1 AND form_owner_id = $2 FOR UPDATE",
+      [formId, getUser(res).userId],
+    );
+    if (ownership.rowCount !== 1) {
+      await client.query("ROLLBACK");
+      return res.status(404).json({ message: QUESTION_ERROR_MESSAGE });
+    }
+
+    const activeQuestions = await client.query(
+      `SELECT question_id
+       FROM questions
+       WHERE question_form_id = $1 AND question_deleted_at IS NULL`,
+      [formId],
+    );
+    const activeQuestionIds = new Set(
+      activeQuestions.rows.map((question) => question.question_id),
+    );
+    const requestIsValid =
+      questionIds.length === activeQuestionIds.size &&
+      questionIds.every((questionId) => activeQuestionIds.has(questionId));
+
+    if (!requestIsValid) {
+      await client.query("ROLLBACK");
       logger.warn(
         { userId: getUser(res).userId, formId },
         "Invalid question reorder request",
       );
       return res.status(400).json({ message: QUESTION_ERROR_MESSAGE });
     }
+
+    const maxOrderResult = await client.query(
+      `SELECT COALESCE(MAX(question_order), 0) AS max_order
+       FROM questions
+       WHERE question_form_id = $1 AND question_deleted_at IS NULL`,
+      [formId],
+    );
+    const orderOffset = Number(maxOrderResult.rows[0].max_order) + 1;
+
+    await client.query(
+      `UPDATE questions
+       SET question_order = question_order + $2,
+           question_updated_at = CURRENT_TIMESTAMP
+       WHERE question_form_id = $1 AND question_deleted_at IS NULL`,
+      [formId, orderOffset],
+    );
+
+    const reordered = await client.query(
+      `WITH requested AS (
+         SELECT question_id, question_order
+         FROM unnest($1::text[]) WITH ORDINALITY
+           AS requested(question_id, question_order)
+       )
+       UPDATE questions q
+       SET question_order = requested.question_order,
+           question_updated_at = CURRENT_TIMESTAMP
+       FROM requested
+       WHERE q.question_id = requested.question_id
+         AND q.question_form_id = $2
+         AND q.question_deleted_at IS NULL
+       RETURNING q.question_id`,
+      [questionIds, formId],
+    );
+
+    if (reordered.rowCount !== questionIds.length) {
+      await client.query("ROLLBACK");
+      return res.status(400).json({ message: QUESTION_ERROR_MESSAGE });
+    }
+    await client.query("COMMIT");
 
     logger.info(
       {
@@ -207,11 +240,14 @@ questionRoutes.patch("/:formId/questions/reorder", async (req, res) => {
     );
     return res.status(200).json({ questionIds });
   } catch (err) {
+    await client?.query("ROLLBACK").catch(() => undefined);
     logger.error(
       { error: err, userId: getUser(res).userId, formId },
       "Question reorder failed",
     );
     return res.status(500).json({ message: QUESTION_ERROR_MESSAGE });
+  } finally {
+    client?.release();
   }
 });
 
@@ -232,15 +268,14 @@ questionRoutes.patch("/:formId/questions/:questionId", async (req, res) => {
       `UPDATE questions q
        SET question_label = $1,
            question_type = $2,
-           question_order = $3,
-           question_is_required = $4,
-           question_config = $5,
+           question_is_required = $3,
+           question_config = $4,
            question_updated_at = CURRENT_TIMESTAMP
        FROM forms f
-       WHERE q.question_id = $6
-         AND q.question_form_id = $7
+       WHERE q.question_id = $5
+         AND q.question_form_id = $6
          AND q.question_form_id = f.form_id
-         AND f.form_owner_id = $8
+         AND f.form_owner_id = $7
          AND q.question_deleted_at IS NULL
        RETURNING q.question_id, q.question_form_id, q.question_label,
                  q.question_type, q.question_order, q.question_is_required,
@@ -249,7 +284,6 @@ questionRoutes.patch("/:formId/questions/:questionId", async (req, res) => {
       [
         question.label,
         question.type,
-        question.order,
         question.required,
         question.config,
         questionId,
