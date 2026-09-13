@@ -1,6 +1,6 @@
-# Forms App
+# Creator Support PH Technical Assessment
 
-A full-stack form builder inspired by a reduced Google Forms workflow. Authenticated creators can build and publish forms, review responses, export them to XLSX, and configure response webhooks. Anyone with a published form URL can submit a response without signing in.
+This application was developed as a technical assessment for Creator Support PH, inspired by Google Forms. It allows authenticated creators to build, customize, and publish forms, review submitted responses, export response data to XLSX, and configure response webhooks. Once a form is published, anyone with its shareable URL can submit a response without needing to sign in. The application also includes a separate webhook consumer website that receives and displays webhook payloads through a lightweight, minimal HTML, CSS, and JavaScript interface.
 
 ## Features
 
