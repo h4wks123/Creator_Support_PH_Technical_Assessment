@@ -29,6 +29,19 @@ import {
 
 const FORM_SAVE_DEBOUNCE_MS = 500;
 
+type PendingQuestionSave = {
+  question: FormQuestion;
+  revision: number;
+};
+
+type QuestionSaveState = {
+  deleted: boolean;
+  inFlight: boolean;
+  pending: PendingQuestionSave | null;
+  promise: Promise<void> | null;
+  revision: number;
+};
+
 export default function FormBuilder({
   formId,
   initialDraft,
@@ -43,6 +56,7 @@ export default function FormBuilder({
     Record<string, QuestionValidationErrors>
   >({});
   const saveFormTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const questionSaveStates = useRef(new Map<string, QuestionSaveState>());
 
   useEffect(
     () => () => {
@@ -92,8 +106,55 @@ export default function FormBuilder({
     }));
   };
 
+  const persistPendingQuestionChanges = async (
+    questionId: string,
+    state: QuestionSaveState,
+  ) => {
+    state.inFlight = true;
+
+    while (state.pending && !state.deleted) {
+      const pendingSave = state.pending;
+      state.pending = null;
+
+      try {
+        await updateQuestion(formId, pendingSave.question);
+      } catch (error) {
+        if (
+          !state.deleted &&
+          !state.pending &&
+          state.revision === pendingSave.revision
+        ) {
+          setQuestionErrors((current) => ({
+            ...current,
+            [questionId]: {
+              ...current[questionId],
+              server:
+                error instanceof Error
+                  ? error.message
+                  : "Unable to save question",
+            },
+          }));
+        }
+      }
+    }
+
+    state.inFlight = false;
+    state.promise = null;
+    if (questionSaveStates.current.get(questionId) === state) {
+      questionSaveStates.current.delete(questionId);
+    }
+  };
+
+  const waitForQuestionSaves = async () => {
+    const saves = Array.from(questionSaveStates.current.values())
+      .map((state) => state.promise)
+      .filter((save): save is Promise<void> => save !== null);
+    await Promise.all(saves);
+  };
+
   const addQuestion = async (type: QuestionType) => {
     try {
+      await waitForQuestionSaves();
       const latestQuestions = await getQuestions(formId);
       setDraft((current) => ({ ...current, questions: latestQuestions }));
 
@@ -111,6 +172,7 @@ export default function FormBuilder({
     if (!questionId || questionId.startsWith("question-")) return;
 
     try {
+      await waitForQuestionSaves();
       const latestQuestions = await getQuestions(formId);
       const latestIndex = latestQuestions.findIndex(
         (question) => question.id === questionId,
@@ -146,26 +208,43 @@ export default function FormBuilder({
 
   const updateDraftQuestion = (question: FormQuestion) => {
     const errors = validateQuestion(question);
+    const state = questionSaveStates.current.get(question.id) ?? {
+      deleted: false,
+      inFlight: false,
+      pending: null,
+      promise: null,
+      revision: 0,
+    };
+    state.revision += 1;
+    questionSaveStates.current.set(question.id, state);
+
     setQuestionErrors((current) => ({ ...current, [question.id]: errors }));
     updateQuestions(
       draft.questions.map((current) =>
         current.id === question.id ? question : current,
       ),
     );
-    if (Object.keys(errors).length) return;
-    void updateQuestion(formId, question).catch((error) =>
-      setQuestionErrors((current) => ({
-        ...current,
-        [question.id]: {
-          ...current[question.id],
-          server:
-            error instanceof Error ? error.message : "Unable to save question",
-        },
-      })),
-    );
+    if (Object.keys(errors).length) {
+      state.pending = null;
+      if (!state.inFlight) questionSaveStates.current.delete(question.id);
+      return;
+    }
+
+    state.pending = { question, revision: state.revision };
+    if (!state.inFlight) {
+      state.promise = persistPendingQuestionChanges(question.id, state);
+      void state.promise;
+    }
   };
 
   const removeQuestion = async (question: FormQuestion) => {
+    const saveState = questionSaveStates.current.get(question.id);
+    if (saveState) {
+      saveState.deleted = true;
+      saveState.pending = null;
+      saveState.revision += 1;
+      await saveState.promise;
+    }
     updateQuestions(
       draft.questions.filter((current) => current.id !== question.id),
     );

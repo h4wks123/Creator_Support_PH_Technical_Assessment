@@ -57,12 +57,9 @@ export default function NavBar() {
             <Link href="/" className="text-primary">
               Forms
             </Link>
-            <Link href="#" className="text-slate-600 hover:text-primary">
-              Webhook consumer
-            </Link>
           </div>
         </div>
-        <div className="flex items-center gap-4 text-sm text-slate-500">
+        <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500">
           {email ? (
             <p className="max-w-60 truncate text-sm font-semibold text-secondary">
               {email}
