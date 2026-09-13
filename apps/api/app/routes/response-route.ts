@@ -3,6 +3,10 @@ import * as XLSX from "xlsx";
 import { pool } from "../config/psql-db.ts";
 import { verifyJWT } from "../middleware/auth-middleware.ts";
 import type { AuthenticatedUser } from "../types/auth-types.ts";
+import {
+  responseExportQuestionSchema,
+  type ResponseExport,
+} from "../types/response-types.ts";
 import { logger } from "../utils/logger.ts";
 
 const responseRoutes = Router();
@@ -144,21 +148,16 @@ async function exportResponses(req: Request, res: Response) {
       ),
     ]);
 
-    const questions = questionsResult.rows as Array<{
-      question_id: string;
-      question_label: string;
-      question_order: number;
-    }>;
+    const questions = responseExportQuestionSchema
+      .array()
+      .parse(questionsResult.rows);
     const questionColumns = new Map(
       questions.map((question) => [
         question.question_id,
         question.question_label,
       ]),
     );
-    const responseRows = new Map<
-      string,
-      { email: string; submittedAt: string; answers: Map<string, unknown> }
-    >();
+    const responseRows = new Map<string, ResponseExport>();
 
     for (const row of responsesResult.rows) {
       const responseKey = row.response_id;

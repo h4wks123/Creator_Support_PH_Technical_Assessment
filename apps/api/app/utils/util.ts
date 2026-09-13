@@ -1,20 +1,25 @@
 import { config } from "dotenv";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
-import type {
-  CreateFormInput,
-  UpdateFormInput,
-  UpdateFormStatusInput,
+import {
+  createFormSchema,
+  updateFormSchema,
+  updateFormStatusSchema,
+  type CreateFormInput,
+  type UpdateFormInput,
+  type UpdateFormStatusInput,
 } from "../types/form-types.ts";
 import {
-  QUESTION_TYPE_MAX,
-  QUESTION_TYPE_MIN,
+  createQuestionSchema,
+  linearScaleConfigSchema,
+  questionOptionsSchema,
   type CreateQuestionInput,
 } from "../types/question-types.ts";
-import type {
-  QuestionForResponseValidation,
-  ResponseValidationFailure,
-  SubmitResponseInput,
+import {
+  submitResponseSchema,
+  type QuestionForResponseValidation,
+  type ResponseValidationFailure,
+  type SubmitResponseInput,
 } from "../types/response-types.ts";
 
 config({
@@ -87,49 +92,8 @@ export const validateEmail = (email: string) =>
 export const validatePassword = (password: string) =>
   passwordSchema.safeParse(password).success;
 
-const recordSchema = z.record(z.string(), z.unknown());
-const formSchema = z.object({
-  title: z.string().trim().min(1).max(255).default("Untitled form"),
-  description: z.string().trim().max(5000).nullable().default(null),
-  isPublished: z.boolean().default(false),
-});
-const updateFormSchema = z.object({
-  title: z.string().trim().min(1).max(255),
-  description: z.string().trim().max(5000).nullable(),
-});
-const updateFormStatusSchema = z.object({
-  isPublished: z.boolean(),
-});
-const questionSchema = z.object({
-  label: z.string().trim().min(1).max(255),
-  type: z.number().int().min(QUESTION_TYPE_MIN).max(QUESTION_TYPE_MAX),
-  order: z.number().int().positive().optional(),
-  required: z.boolean().default(false),
-  config: recordSchema.default({}),
-});
-const questionOptionsSchema = z
-  .object({
-    options: z
-      .array(z.string().trim().min(1).max(255))
-      .min(1)
-      .refine((options) => new Set(options).size === options.length),
-  })
-  .loose();
-const linearScaleConfigSchema = z
-  .object({
-    min: z.number().int(),
-    max: z.number().int(),
-    minLabel: z.string().trim().max(255).default(""),
-    maxLabel: z.string().trim().max(255).default(""),
-  })
-  .refine(({ min, max }) => min <= max);
-const responseSchema = z.object({
-  email: emailSchema,
-  answers: z.array(z.object({ questionId: z.string(), value: z.unknown() })),
-});
-
 export const parseCreateForm = (body: unknown): CreateFormInput | null => {
-  const result = formSchema.safeParse(body);
+  const result = createFormSchema.safeParse(body);
   return result.success ? result.data : null;
 };
 
@@ -148,7 +112,7 @@ export const parseUpdateFormStatus = (
 export const parseCreateQuestion = (
   body: unknown,
 ): CreateQuestionInput | null => {
-  const result = questionSchema.safeParse(body);
+  const result = createQuestionSchema.safeParse(body);
   if (!result.success) return null;
 
   if ([4, 5, 6, 7].includes(result.data.type)) {
@@ -171,7 +135,7 @@ export const createSlug = () => crypto.randomUUID();
 export const parseSubmitResponse = (
   body: unknown,
 ): SubmitResponseInput | null => {
-  const result = responseSchema.safeParse(body);
+  const result = submitResponseSchema.safeParse(body);
   return result.success ? result.data : null;
 };
 

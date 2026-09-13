@@ -1,7 +1,10 @@
 import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { env } from "../utils/util.ts";
-import type { AuthenticatedUser, JwtClaims } from "../types/auth-types.ts";
+import {
+  authenticatedUserSchema,
+  jwtClaimsSchema,
+} from "../types/auth-types.ts";
 import { logger } from "../utils/logger.ts";
 
 export const verifyJWT = (req: Request, res: Response, next: NextFunction) => {
@@ -23,16 +26,13 @@ export const verifyJWT = (req: Request, res: Response, next: NextFunction) => {
     }
 
     const decoded = jwt.verify(token, env.jwtSecret);
-    if (
-      typeof decoded !== "object" ||
-      decoded === null ||
-      typeof decoded.sub !== "string"
-    ) {
-      throw new Error("JWT claims are invalid");
-    }
+    const claims = jwtClaimsSchema.safeParse(decoded);
+    if (!claims.success) throw new Error("JWT claims are invalid");
 
-    const claims = decoded as JwtClaims;
-    const user: AuthenticatedUser = { userId: claims.sub, email: claims.email };
+    const user = authenticatedUserSchema.parse({
+      userId: claims.data.sub,
+      email: claims.data.email,
+    });
 
     res.locals.user = user;
 

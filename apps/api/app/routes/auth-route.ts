@@ -5,15 +5,23 @@ import { env } from "../utils/util.ts";
 import { pool } from "../config/psql-db.ts";
 import { logger } from "../utils/logger.ts";
 import { validateEmail, validatePassword } from "../utils/util.ts";
+import { credentialsBodySchema } from "../types/auth-types.ts";
 
 const authRoutes = Router();
 const AUTH_ERROR_MESSAGE = "Unable to process authentication request";
 
+const parseCredentials = (body: unknown) => {
+  const result = credentialsBodySchema.safeParse(body);
+  return result.success ? result.data : null;
+};
+
 authRoutes.post("/login", async (req, res) => {
-  const { email, password } = req.body as {
-    email?: string;
-    password?: string;
-  };
+  const credentials = parseCredentials(req.body);
+  if (!credentials) {
+    logger.error("Invalid login payload format");
+    return res.status(422).json({ message: AUTH_ERROR_MESSAGE });
+  }
+  const { email, password } = credentials;
 
   if (!email || !password) {
     logger.error(`Email or password payload is missing`);
@@ -56,10 +64,12 @@ authRoutes.post("/login", async (req, res) => {
 });
 
 authRoutes.post("/register", async (req, res) => {
-  const { email, password } = req.body as {
-    email?: string;
-    password?: string;
-  };
+  const credentials = parseCredentials(req.body);
+  if (!credentials) {
+    logger.error("Invalid registration payload format");
+    return res.status(422).json({ message: AUTH_ERROR_MESSAGE });
+  }
+  const { email, password } = credentials;
 
   if (!email || !password) {
     logger.error(`Email or password payload is missing`);
