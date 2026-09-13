@@ -20,11 +20,11 @@ This application was developed as a technical assessment for Creator Support PH,
 
 | Layer | Technology |
 | --- | --- |
-| API | Express 5, TypeScript, Zod, `pg`, Pino |
+| API | Express 5, TypeScript, Zod, pg, Pino |
 | Web | Next.js 16, React 19, TypeScript, Tailwind CSS |
 | Database | PostgreSQL 17 |
 | Authentication | JWT bearer tokens and bcrypt password hashing |
-| Spreadsheet export | SheetJS `xlsx` |
+| Spreadsheet export | SheetJS, xlsx |
 | Local infrastructure | Docker Compose |
 | Webhook consumer | Node.js HTTP server with in-memory storage |
 
