@@ -151,12 +151,7 @@ async function exportResponses(req: Request, res: Response) {
     const questions = responseExportQuestionSchema
       .array()
       .parse(questionsResult.rows);
-    const questionColumns = new Map(
-      questions.map((question) => [
-        question.question_id,
-        question.question_label,
-      ]),
-    );
+    const snapshotLabels = new Map<string, string>();
     const responseRows = new Map<string, ResponseExport>();
 
     for (const row of responsesResult.rows) {
@@ -169,30 +164,35 @@ async function exportResponses(req: Request, res: Response) {
 
       if (row.answer_question_id) {
         response.answers.set(row.answer_question_id, row.answer_value);
+        if (!snapshotLabels.has(row.answer_question_id)) {
+          snapshotLabels.set(row.answer_question_id, row.answer_question_label);
+        }
       }
       responseRows.set(responseKey, response);
     }
 
-    const rows = Array.from(responseRows.values()).map((response) => {
-      const row: Record<string, unknown> = {
-        email: response.email,
-        "submitted-at": response.submittedAt,
-      };
+    const questionColumns = questions.map((question) => ({
+      id: question.question_id,
+      label:
+        snapshotLabels.get(question.question_id) ?? question.question_label,
+    }));
+    const rows = Array.from(responseRows.values()).map((response) => [
+      response.email,
+      response.submittedAt,
+      ...questionColumns.map(({ id }) => {
+        const value = response.answers.get(id);
+        return Array.isArray(value) ? value.join(", ") : (value ?? "");
+      }),
+    ]);
 
-      for (const [questionId, label] of questionColumns) {
-        const value = response.answers.get(questionId);
-        row[label] = Array.isArray(value) ? value.join(", ") : (value ?? "");
-      }
-      return row;
-    });
-
-    const worksheet = XLSX.utils.json_to_sheet(rows, {
-      header: [
+    const worksheet = XLSX.utils.aoa_to_sheet([
+      [
         "email",
         "submitted-at",
-        ...questions.map((question) => question.question_label),
+        ...questionColumns.map((question) => question.label),
       ],
-    });
+      ...rows,
+    ]);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Responses");
     const file = XLSX.write(workbook, { bookType: "xlsx", type: "buffer" });
