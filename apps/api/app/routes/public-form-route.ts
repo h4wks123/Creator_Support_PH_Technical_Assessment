@@ -154,7 +154,7 @@ publicFormRoutes.post("/:slug/responses", async (req, res) => {
            answer_value jsonb
          )
        )
-       SELECT response_id
+       SELECT response_id, response_submitted_at
        FROM inserted_response`,
       [
         responseId,
