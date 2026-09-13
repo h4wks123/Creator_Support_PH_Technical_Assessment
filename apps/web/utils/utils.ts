@@ -108,14 +108,10 @@ export function validateQuestion(
       linearScale.min = "Minimum cannot be greater than maximum.";
       linearScale.max = "Maximum must be at least the minimum.";
     }
-    if (!scale?.minLabel.trim())
-      linearScale.minLabel = "Minimum label is required.";
-    else if (scale.minLabel.trim().length > QUESTION_OPTION_MAX_LENGTH) {
+    if (scale && scale.minLabel.trim().length > QUESTION_OPTION_MAX_LENGTH) {
       linearScale.minLabel = `Label must be ${QUESTION_OPTION_MAX_LENGTH} characters or fewer.`;
     }
-    if (!scale?.maxLabel.trim())
-      linearScale.maxLabel = "Maximum label is required.";
-    else if (scale.maxLabel.trim().length > QUESTION_OPTION_MAX_LENGTH) {
+    if (scale && scale.maxLabel.trim().length > QUESTION_OPTION_MAX_LENGTH) {
       linearScale.maxLabel = `Label must be ${QUESTION_OPTION_MAX_LENGTH} characters or fewer.`;
     }
 

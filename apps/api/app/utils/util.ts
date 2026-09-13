@@ -39,7 +39,10 @@ const port = (name: string) => {
 const origin = (name: string) => {
   const value = required(name);
   const parsed = new URL(value);
-  if (!["http:", "https:"].includes(parsed.protocol) || parsed.origin !== value) {
+  if (
+    !["http:", "https:"].includes(parsed.protocol) ||
+    parsed.origin !== value
+  ) {
     throw new Error(`${name} must be an HTTP(S) origin without a path`);
   }
   return value;
@@ -116,8 +119,8 @@ const linearScaleConfigSchema = z
   .object({
     min: z.number().int(),
     max: z.number().int(),
-    minLabel: z.string().trim().min(1).max(255),
-    maxLabel: z.string().trim().min(1).max(255),
+    minLabel: z.string().trim().max(255).default(""),
+    maxLabel: z.string().trim().max(255).default(""),
   })
   .refine(({ min, max }) => min <= max);
 const responseSchema = z.object({
