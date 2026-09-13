@@ -3,9 +3,11 @@
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
 import toaster from "@/components/toaster";
+import { clearAuthToken } from "@/lib/auth";
 
 const messages: Record<string, string> = {
   load: "Unable to load webpage.",
+  session: "Could not log in. Your session is invalid or expired.",
   form: "Unable to load form.",
   responses: "Unable to load responses.",
   response: "Unable to load response.",
@@ -29,6 +31,11 @@ export default function NavigationErrorNotifier() {
 
     lastNotifiedError.current = error;
     lastNotifiedAt.current = Date.now();
+
+    if (error === "session") {
+      clearAuthToken();
+    }
+
     toaster(500, messages[error] ?? messages.load);
     window.history.replaceState({}, "", window.location.pathname);
   }, [error]);

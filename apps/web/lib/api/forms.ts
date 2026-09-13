@@ -11,6 +11,19 @@ import {
 export type CreatedForm = FormRecord;
 export const FORM_UPDATED_EVENT = "form-updated";
 
+class FormsApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+    this.name = "FormsApiError";
+  }
+}
+
+export const isUnauthorizedFormsError = (error: unknown) =>
+  error instanceof FormsApiError && error.status === 401;
+
 const formPayloadSchema = z.object({ form: formRecordSchema });
 const formsPayloadSchema = z.object({ forms: z.array(formListRecordSchema) });
 const deleteFormResponseSchema = z.object({ formId: z.string() });
@@ -30,14 +43,13 @@ export type UpdateFormInput = z.infer<typeof updateFormInputSchema>;
 
 export async function getForms(authToken?: string): Promise<FormListRecord[]> {
   const token = authToken ?? getAuthToken();
-  const response = await fetch(
-    `${getApiUrl()}/api/forms`,
-    {
-      headers: { Authorization: `Bearer ${token}` },
-    },
-  );
+  const response = await fetch(`${getApiUrl()}/api/forms`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
 
-  if (!response.ok) throw new Error("Unable to fetch forms");
+  if (!response.ok) {
+    throw new FormsApiError("Unable to fetch forms", response.status);
+  }
   return formsPayloadSchema.parse(await response.json()).forms;
 }
 
@@ -78,17 +90,14 @@ export async function updateFormStatus(
   isPublished: boolean,
 ): Promise<CreatedForm> {
   const input = updateFormStatusInputSchema.parse({ isPublished });
-  const response = await fetch(
-    `${getApiUrl()}/api/forms/${formId}/status`,
-    {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${getAuthToken()}`,
-      },
-      body: JSON.stringify(input),
+  const response = await fetch(`${getApiUrl()}/api/forms/${formId}/status`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getAuthToken()}`,
     },
-  );
+    body: JSON.stringify(input),
+  });
 
   if (!response.ok) throw new Error("Unable to update form status");
   return formPayloadSchema.parse(await response.json()).form;
@@ -99,17 +108,14 @@ export async function updateForm(
   input: UpdateFormInput,
 ): Promise<CreatedForm> {
   const metadata = updateFormInputSchema.parse(input);
-  const response = await fetch(
-    `${getApiUrl()}/api/forms/${formId}`,
-    {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${getAuthToken()}`,
-      },
-      body: JSON.stringify(metadata),
+  const response = await fetch(`${getApiUrl()}/api/forms/${formId}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getAuthToken()}`,
     },
-  );
+    body: JSON.stringify(metadata),
+  });
 
   if (!response.ok) throw new Error("Unable to save form");
   return formPayloadSchema.parse(await response.json()).form;
@@ -120,13 +126,10 @@ export async function deleteForm(
   authToken?: string,
 ): Promise<void> {
   const token = authToken ?? getAuthToken();
-  const response = await fetch(
-    `${getApiUrl()}/api/forms/${formId}`,
-    {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-    },
-  );
+  const response = await fetch(`${getApiUrl()}/api/forms/${formId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
 
   if (!response.ok) throw new Error("Unable to delete form");
   deleteFormResponseSchema.parse(await response.json());

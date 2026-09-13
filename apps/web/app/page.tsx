@@ -3,13 +3,21 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import CreateFormButton from "@/components/forms/create-form-button";
 import DeleteFormButton from "@/components/forms/delete-form-button";
-import { getForms } from "@/lib/api/forms";
+import { getForms, isUnauthorizedFormsError } from "@/lib/api/forms";
 
 export default async function HomePage() {
   const authToken = (await cookies()).get("auth_token")?.value;
-  const forms = await getForms(authToken).catch(() =>
-    redirect("/login?error=load"),
-  );
+  let forms;
+
+  try {
+    forms = await getForms(authToken);
+  } catch (error) {
+    if (isUnauthorizedFormsError(error)) {
+      redirect("/login?error=session");
+    }
+
+    throw error;
+  }
 
   return (
     <main className="min-h-[calc(100dvh-57px)] bg-page text-secondary">

@@ -7,6 +7,22 @@ const AUTH_ROUTES = ["/login", "/register"];
 const normalizePathname = (pathname: string) =>
   pathname.replace(/\/+$/, "") || "/";
 
+const redirect = (request: NextRequest, location: string) => {
+  const forwardedHost = request.headers
+    .get("x-forwarded-host")
+    ?.split(",")[0]
+    .trim();
+  const host = forwardedHost || request.headers.get("host");
+  const forwardedProtocol = request.headers
+    .get("x-forwarded-proto")
+    ?.split(",")[0]
+    .trim();
+  const protocol = forwardedProtocol || request.nextUrl.protocol.slice(0, -1);
+  const origin = host ? `${protocol}://${host}` : request.nextUrl.origin;
+
+  return NextResponse.redirect(new URL(location, origin));
+};
+
 export async function middleware(request: NextRequest) {
   const pathname = normalizePathname(request.nextUrl.pathname);
   const isAuthRoute = AUTH_ROUTES.includes(pathname);
@@ -22,19 +38,16 @@ export async function middleware(request: NextRequest) {
   }
 
   const token = request.cookies.get(AUTH_COOKIE)?.value;
-  const isLoggedIn = Boolean(token);
+  const hasAuthCookie = Boolean(token);
 
-  if (isProtectedRoute && !isLoggedIn) {
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
-
-  if (isAuthRoute && isLoggedIn) {
-    return NextResponse.redirect(new URL("/", request.url));
+  if (isProtectedRoute && !hasAuthCookie) {
+    return redirect(request, "/login");
   }
 
   if (!isAuthRoute && !isProtectedRoute) {
-    return NextResponse.redirect(
-      new URL(isLoggedIn ? "/?error=load" : "/login?error=load", request.url),
+    return redirect(
+      request,
+      hasAuthCookie ? "/?error=load" : "/login?error=load",
     );
   }
 
